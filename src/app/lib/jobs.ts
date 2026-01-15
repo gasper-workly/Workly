@@ -126,8 +126,9 @@ export async function getProviderCompletedJobCategoryCounts(providerId: string):
   }
 
   const counts = new Map<string, number>();
-  for (const row of data || []) {
-    const name = (row as any).category || 'Other';
+  type CompletedJobCategoryRow = { category: string | null };
+  for (const row of (data as CompletedJobCategoryRow[] | null) || []) {
+    const name = row.category || 'Other';
     counts.set(name, (counts.get(name) || 0) + 1);
   }
 

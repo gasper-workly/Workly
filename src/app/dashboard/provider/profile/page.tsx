@@ -664,7 +664,9 @@ export default function ProviderProfilePage() {
                         </div>
                       </div>
                       {review.comment ? (
-                        <p className="mt-1 text-sm text-gray-600 italic">"{review.comment}"</p>
+                        <p className="mt-1 text-sm text-gray-600 italic">
+                          &quot;{review.comment}&quot;
+                        </p>
                       ) : null}
                     </div>
                   </div>

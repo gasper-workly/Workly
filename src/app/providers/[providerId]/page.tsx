@@ -202,7 +202,9 @@ export default function PublicProviderProfilePage() {
                         </div>
                       </div>
                       {review.comment ? (
-                        <p className="mt-1 text-sm text-gray-700 italic">"{review.comment}"</p>
+                        <p className="mt-1 text-sm text-gray-700 italic">
+                          &quot;{review.comment}&quot;
+                        </p>
                       ) : null}
                     </div>
                   </div>

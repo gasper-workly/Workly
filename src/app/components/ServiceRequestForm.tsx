@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 import LocationPicker, { LocationData } from './LocationPicker';
 import { useTranslation } from '@/app/hooks/useTranslation';
+import type { TranslationKey } from '@/app/lib/translations';
 
 interface ServiceRequestFormProps {
   onSubmit: (data: ServiceRequestData) => void;
@@ -63,7 +64,7 @@ const CATEGORY_OPTIONS: { label: ServiceRequestData['category']; icon: (props: R
   { label: 'Other', icon: SparklesIcon },
 ];
 
-const CATEGORY_TO_KEY: Record<ServiceRequestData['category'], any> = {
+const CATEGORY_TO_KEY: Record<ServiceRequestData['category'], TranslationKey> = {
   'Home Maintenance & Repair': 'category.homeMaintenance',
   'Outdoor & Garden Work': 'category.outdoorGarden',
   'Moving & Transport': 'category.movingTransport',

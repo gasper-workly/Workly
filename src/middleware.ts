@@ -1,7 +1,11 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export function middleware(_request: NextRequest) {
-  // MVP: keep middleware minimal.\n+  // Next.js middleware runs on the Edge Runtime, and Supabase SSR pulls in Node APIs\n+  // which can break Vercel builds.\n+  // Auth/role redirects are handled at the page level instead.\n+  return NextResponse.next();
+export function middleware() {
+  // MVP: keep middleware minimal.
+  // Next.js middleware runs on the Edge Runtime, and Supabase SSR pulls in Node APIs
+  // which can break Vercel builds.
+  // Auth/role redirects are handled at the page level instead.
+  return NextResponse.next();
 }
 
 export const config = {

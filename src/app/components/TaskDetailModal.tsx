@@ -114,12 +114,12 @@ export default function TaskDetailModal({
   onChatClick,
   chatButtonLabel,
 }: TaskDetailModalProps) {
+  const { t } = useTranslation();
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+
   if (!isOpen) {
     return null;
   }
-
-  const { t } = useTranslation();
-  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   const {
     title,

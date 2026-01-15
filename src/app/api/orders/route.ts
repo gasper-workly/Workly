@@ -10,8 +10,9 @@ export async function POST(req: NextRequest) {
     }
     const order = await createOrder({ threadId, taskId, clientId, providerId, title, location, dateTimeISO, priceEur });
     return NextResponse.json(order, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error?.message ?? 'Failed to create order' }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to create order';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

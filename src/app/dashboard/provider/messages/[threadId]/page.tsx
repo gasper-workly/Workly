@@ -12,10 +12,20 @@ import {
   sendMessage, 
   subscribeToMessages,
   markMessagesAsRead,
-  Message 
+  Message,
+  type ChatThreadWithDetails
 } from '@/app/lib/chat';
-import { getJobById } from '@/app/lib/jobs';
+import { getJobById, type JobWithUsers } from '@/app/lib/jobs';
 import { Order, getOrdersForThread, acceptOrder, declineOrder } from '@/app/lib/orders';
+
+type ChatMessage = {
+  id: string;
+  senderId: string;
+  senderName: string;
+  content: string;
+  imageUrl?: string;
+  timestamp: string;
+};
 
 export default function ProviderChatPage() {
   const router = useRouter();
@@ -23,9 +33,9 @@ export default function ProviderChatPage() {
   const threadId = params?.threadId;
   const { user, loading: authLoading } = useAuth();
 
-  const [thread, setThread] = useState<any>(null);
-  const [job, setJob] = useState<any>(null);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [thread, setThread] = useState<ChatThreadWithDetails | null>(null);
+  const [job, setJob] = useState<JobWithUsers | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<Order[]>([]);
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -53,12 +63,12 @@ export default function ProviderChatPage() {
         const jobMessages = await getMessagesForTask(chatThread.job_id);
         
         // Transform messages for ChatInterface
-        const transformedMessages = jobMessages.map(msg => ({
+        const transformedMessages: ChatMessage[] = jobMessages.map((msg) => ({
           id: msg.id,
           senderId: msg.sender_id,
           senderName: msg.sender?.name || 'User',
           content: msg.content,
-          imageUrl: msg.image_url,
+          imageUrl: msg.image_url ?? undefined,
           timestamp: msg.created_at,
         }));
         setMessages(transformedMessages);
@@ -101,7 +111,7 @@ export default function ProviderChatPage() {
     if (!thread?.job_id) return;
 
     const unsubscribe = subscribeToMessages(thread.job_id, (newMessage: Message) => {
-      setMessages(prev => {
+      setMessages((prev) => {
         // Avoid duplicates
         if (prev.some(m => m.id === newMessage.id)) return prev;
         
@@ -110,7 +120,7 @@ export default function ProviderChatPage() {
           senderId: newMessage.sender_id,
           senderName: 'User', // Will be fetched properly
           content: newMessage.content,
-          imageUrl: newMessage.image_url,
+          imageUrl: newMessage.image_url ?? undefined,
           timestamp: newMessage.created_at,
         }];
       });
