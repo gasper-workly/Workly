@@ -53,7 +53,7 @@ export default function ClientJobConversationsPage() {
           providerId: thread.provider_id,
           providerName: thread.provider?.name || t('messages.job.providerFallback'),
           providerCompletedRequests: thread.provider?.completed_requests || 0,
-          providerAvatarUrl: thread.provider?.avatar_url,
+          providerAvatarUrl: thread.provider?.avatar_url ?? undefined,
           lastMessage: thread.last_message?.content,
           lastMessageAt: thread.last_message_at,
           unreadCount: unreadCounts[index],

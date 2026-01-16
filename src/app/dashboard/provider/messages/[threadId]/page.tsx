@@ -78,22 +78,7 @@ export default function ProviderChatPage() {
 
         // Get orders for this thread
         const threadOrders = await getOrdersForThread(chatThread.job_id);
-        // Transform orders for ChatInterface
-        const transformedOrders = threadOrders.map(order => ({
-          id: order.id,
-          threadId: chatThread.id,
-          taskId: order.job_id,
-          clientId: order.client_id,
-          providerId: order.provider_id,
-          title: order.title,
-          location: order.location || '',
-          dateTimeISO: order.date_time || new Date().toISOString(),
-          priceEur: order.price_eur,
-          status: order.status,
-          createdAt: order.created_at,
-          updatedAt: order.updated_at,
-        }));
-        setOrders(transformedOrders as Order[]);
+        setOrders(threadOrders as Order[]);
       } catch (error) {
         console.error('Error loading chat data:', error);
       } finally {
@@ -185,7 +170,7 @@ export default function ProviderChatPage() {
 
   // Get client info from thread or job
   const clientName = thread.client?.name || job.client?.name || 'Client';
-  const clientId = thread.client_id || job.client_id;
+  const clientId = thread.client_id || job.client_id || undefined;
   const clientCompletedRequests = thread.client?.completed_requests || job.client?.completed_requests || 0;
 
   return (
@@ -213,7 +198,7 @@ export default function ProviderChatPage() {
           otherUserName={clientName}
           otherUserRole="client"
           otherUserCompletedRequests={clientCompletedRequests}
-          otherUserImageUrl={thread.client?.avatar_url || job.client?.avatar_url}
+          otherUserImageUrl={thread.client?.avatar_url || job.client?.avatar_url || undefined}
           orders={orders}
           onBack={() => router.back()}
           onTaskClick={() => setShowTaskModal(true)}

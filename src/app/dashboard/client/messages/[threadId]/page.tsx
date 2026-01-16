@@ -84,22 +84,7 @@ export default function ClientChatPage() {
 
         // Get orders for this thread
         const threadOrders = await getOrdersForThread(chatThread.job_id);
-        // Transform orders for ChatInterface
-        const transformedOrders = threadOrders.map(order => ({
-          id: order.id,
-          threadId: chatThread.id,
-          taskId: order.job_id,
-          clientId: order.client_id,
-          providerId: order.provider_id,
-          title: order.title,
-          location: order.location || '',
-          dateTimeISO: order.date_time || new Date().toISOString(),
-          priceEur: order.price_eur,
-          status: order.status,
-          createdAt: order.created_at,
-          updatedAt: order.updated_at,
-        }));
-        setOrders(transformedOrders as Order[]);
+        setOrders(threadOrders as Order[]);
       } catch (error) {
         console.error('Error loading chat data:', error);
       } finally {
@@ -233,9 +218,9 @@ export default function ClientChatPage() {
 
   // Get provider info from thread or job
   const providerName = thread.provider?.name || job.provider?.name || 'Provider';
-  const providerId = thread.provider_id || job.provider_id;
+  const providerId = thread.provider_id || job.provider_id || undefined;
   const providerCompletedRequests = thread.provider?.completed_requests || job.provider?.completed_requests || 0;
-  const providerPhone = thread.provider?.phone || job.provider?.phone;
+  const providerPhone = thread.provider?.phone || job.provider?.phone || undefined;
 
   return (
     <DashboardLayout
@@ -262,7 +247,7 @@ export default function ClientChatPage() {
           otherUserName={providerName}
           otherUserRole="provider"
           otherUserCompletedRequests={providerCompletedRequests}
-          otherUserImageUrl={thread.provider?.avatar_url || job.provider?.avatar_url}
+          otherUserImageUrl={thread.provider?.avatar_url || job.provider?.avatar_url || undefined}
           otherUserPhone={providerPhone}
           orders={orders}
           onBack={() => router.back()}

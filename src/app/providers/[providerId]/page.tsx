@@ -116,7 +116,7 @@ export default function PublicProviderProfilePage() {
         <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] p-5 flex flex-col items-center gap-3">
           {provider && (
             <UserAvatar
-              imageUrl={provider.avatar_url}
+              imageUrl={provider.avatar_url ?? undefined}
               name={provider.name}
               role="provider"
               completedRequests={provider.completed_requests || 0}
@@ -281,7 +281,7 @@ export default function PublicProviderProfilePage() {
 
   if (user) {
     return (
-      <DashboardLayout userRole={user.role} userName={user.name}>
+      <DashboardLayout userRole={user.role === 'admin' ? 'client' : user.role} userName={user.name}>
         {content}
       </DashboardLayout>
     );

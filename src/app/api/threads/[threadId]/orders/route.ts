@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOrdersForThread } from '@/app/lib/orders';
 
-export async function GET(_req: NextRequest, { params }: { params: { threadId: string } }) {
+type RouteContext = { params: Promise<{ threadId: string }> };
+
+export async function GET(_req: NextRequest, context: RouteContext) {
   try {
-    const orders = await getOrdersForThread(params.threadId);
+    const { threadId } = await context.params;
+    const orders = await getOrdersForThread(threadId);
     return NextResponse.json(orders);
   } catch {
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardLayout from '@/app/components/DashboardLayout';
 import TaskCard from '@/app/components/TaskCard';
@@ -19,7 +19,7 @@ const OPEN_BUCKET_STATUSES: Array<JobWithUsers['status']> = [
   'in_progress',
 ];
 
-export default function RequestsPage() {
+function RequestsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const statusFromUrl = searchParams.get('status') as StatusTab | null;
@@ -331,4 +331,12 @@ export default function RequestsPage() {
       )}
     </DashboardLayout>
   );
-} 
+}
+
+export default function RequestsPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div></div>}>
+      <RequestsPageContent />
+    </Suspense>
+  );
+}

@@ -48,7 +48,7 @@ function getCategoryId(category: string | null): string {
 }
 
 // Job categories list with icons
-const JOB_CATEGORIES: { id: string; labelKey: TranslationKey; icon: (props: React.SVGProps<SVGSVGElement>) => JSX.Element }[] = [
+const JOB_CATEGORIES: { id: string; labelKey: TranslationKey; icon: React.ComponentType<React.SVGProps<SVGSVGElement>> }[] = [
   { id: 'home_maintenance', labelKey: 'category.homeMaintenance', icon: WrenchScrewdriverIcon },
   { id: 'outdoor_garden', labelKey: 'category.outdoorGarden', icon: HomeModernIcon },
   { id: 'moving_transport', labelKey: 'category.movingTransport', icon: TruckIcon },

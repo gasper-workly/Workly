@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardLayout from '@/app/components/DashboardLayout';
 import UserAvatar from '@/app/components/UserAvatar';
@@ -100,7 +100,7 @@ function ActivityItemComponent({ activity }: { activity: ActivityItem }) {
   );
 }
 
-export default function ProfilePage() {
+function ProfilePageContent() {
   const searchParams = useSearchParams();
   const startEditing = searchParams.get('edit') === '1';
   const { user, loading: authLoading, refresh: refreshAuth } = useAuth();
@@ -469,4 +469,12 @@ export default function ProfilePage() {
       </div>
     </DashboardLayout>
   );
-} 
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div></div>}>
+      <ProfilePageContent />
+    </Suspense>
+  );
+}

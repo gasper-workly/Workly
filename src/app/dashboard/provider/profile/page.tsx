@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { Suspense, useState, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardLayout from '@/app/components/DashboardLayout';
 import UserAvatar from '@/app/components/UserAvatar';
@@ -24,7 +24,7 @@ import type { TranslationKey } from '@/app/lib/translations';
 
 type SortMode = 'newest' | 'highest' | 'lowest';
 
-export default function ProviderProfilePage() {
+function ProviderProfilePageContent() {
   const searchParams = useSearchParams();
   const startEditing = searchParams.get('edit') === '1';
   const { user, loading: authLoading, refresh: refreshAuth } = useAuth();
@@ -678,4 +678,12 @@ export default function ProviderProfilePage() {
       </div>
     </DashboardLayout>
   );
-} 
+}
+
+export default function ProviderProfilePage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div></div>}>
+      <ProviderProfilePageContent />
+    </Suspense>
+  );
+}

@@ -396,7 +396,7 @@ export default function ChatInterface({
                 <div className="inline-flex items-center gap-2">
                   <CalendarIcon className="h-4 w-4" />
                   <span>
-                    {new Date(order.dateTimeISO).toLocaleString([], {
+                    {new Date(order.date_time || '').toLocaleString([], {
                       year: 'numeric',
                       month: 'short',
                       day: 'numeric',
@@ -408,7 +408,7 @@ export default function ChatInterface({
                 </div>
                 <div className="inline-flex items-center gap-2">
                   <BanknotesIcon className="h-4 w-4 text-green-300" />
-                  <span className="font-semibold text-white">€{order.priceEur}</span>
+                  <span className="font-semibold text-white">€{order.price_eur}</span>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2 pt-1">

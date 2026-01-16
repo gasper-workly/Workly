@@ -51,7 +51,7 @@ export interface ServiceRequestData {
   images?: File[];
 }
 
-const CATEGORY_OPTIONS: { label: ServiceRequestData['category']; icon: (props: React.SVGProps<SVGSVGElement>) => JSX.Element }[] = [
+const CATEGORY_OPTIONS: { label: ServiceRequestData['category']; icon: React.ComponentType<React.SVGProps<SVGSVGElement>> }[] = [
   { label: 'Home Maintenance & Repair', icon: WrenchScrewdriverIcon },
   { label: 'Outdoor & Garden Work', icon: HomeModernIcon },
   { label: 'Moving & Transport', icon: TruckIcon },
