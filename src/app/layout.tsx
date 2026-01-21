@@ -1,5 +1,6 @@
 import './globals.css';
 import { LanguageProvider } from '@/app/context/LanguageContext';
+import CapacitorStatusBar from '@/app/components/CapacitorStatusBar';
 
 export const metadata = {
   title: 'Workly',
@@ -24,6 +25,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body>
+        <CapacitorStatusBar />
         <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>
