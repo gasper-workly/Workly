@@ -9,6 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@capacitor/android": "^8.0.1",
+    "@capacitor/cli": "^8.0.1",
+    "@capacitor/core": "^8.0.1",
+    "@capacitor/ios": "^8.0.1",
     "@heroicons/react": "^2.2.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.88.0",
