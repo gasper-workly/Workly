@@ -17,8 +17,8 @@ const config: CapacitorConfig = {
   // iOS specific settings
   ios: {
     backgroundColor: '#7c3aed',
-    contentInset: 'automatic',
-    preferredContentMode: 'mobile'
+    contentInset: 'always',
+    scrollEnabled: false
   }
 };
 
