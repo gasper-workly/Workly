@@ -207,7 +207,7 @@ export default function ChatInterface({
 
   return (
     <div className="w-full">
-      <div className="w-full rounded-none md:rounded-[32px] bg-transparent text-white flex flex-col min-h-[calc(100vh-4rem)] overflow-hidden">
+      <div className="w-full rounded-none md:rounded-[32px] bg-transparent text-white flex flex-col min-h-[calc(100svh-4rem)] overflow-hidden">
         {/* Header */}
         <div className="p-6 pb-4 border-b border-white/25">
           <div className="flex items-start gap-3">
@@ -459,7 +459,7 @@ export default function ChatInterface({
         </div>
 
         {/* Message Input */}
-        <form onSubmit={handleSubmit} className="fixed left-0 right-0 bottom-0 px-4 pb-5 pt-0 bg-transparent md:static md:p-5">
+        <form onSubmit={handleSubmit} className="mt-auto px-4 pb-5 pt-0 bg-transparent md:static md:p-5 safe-area-bottom">
           <div className="flex items-center gap-3 rounded-full border border-white/15 bg-white/10 px-4 py-2 backdrop-blur-md w-full shadow-[0_10px_25px_rgba(15,23,42,0.2)]">
             <button
               type="button"
