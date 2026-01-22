@@ -85,7 +85,7 @@ export default function DashboardLayout({
   const currentNavItems = navigation[userRole];
 
   return (
-    <div className={`min-h-screen flex flex-col ${backgroundClassName} safe-area-top safe-area-x`}>
+    <div className={`min-h-screen flex flex-col ${backgroundClassName} safe-area-top safe-area-bottom safe-area-x`}>
       {/* Side Navigation (Desktop) */}
       <nav className="hidden md:fixed md:inset-y-0 md:left-0 md:flex md:w-56 md:flex-col">
         <div className="flex flex-col flex-grow bg-white pt-6 border-r border-gray-200">
@@ -128,7 +128,7 @@ export default function DashboardLayout({
 
       {/* Bottom Navigation Bar (Mobile) */}
       {!hideMobileNav && (
-        <nav className="bg-white border-t border-gray-200 md:hidden z-[9999] safe-area-bottom safe-area-x">
+        <nav className="bg-white border-t border-gray-200 md:hidden z-[9999]">
           <div className="flex justify-around py-2 px-2">
             {currentNavItems.map((item) => {
               const isActive = pathname === item.href;
