@@ -85,7 +85,7 @@ export default function DashboardLayout({
   const currentNavItems = navigation[userRole];
 
   return (
-    <div className={`min-h-screen flex flex-col ${backgroundClassName} safe-area-top safe-area-x`}>
+    <div className={`h-screen flex flex-col overflow-hidden ${backgroundClassName} safe-area-top safe-area-x`}>
       {/* Side Navigation (Desktop) */}
       <nav className="hidden md:fixed md:inset-y-0 md:left-0 md:flex md:w-56 md:flex-col">
         <div className="flex flex-col flex-grow bg-white pt-6 border-r border-gray-200">
@@ -123,7 +123,7 @@ export default function DashboardLayout({
 
       {/* Main Content */}
       <main
-        className={`flex-1 md:pl-56 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-0 overflow-y-auto ${mainBackgroundClassName}`}
+        className={`flex-1 md:pl-56 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-0 overflow-y-auto overscroll-contain ios-scroll ${mainBackgroundClassName}`}
       >
         <div className={contentClassName}>{children}</div>
       </main>

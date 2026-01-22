@@ -25,6 +25,11 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* iOS: make overflow scrolling smooth/consistent inside scroll containers */
+.ios-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Safe Area Utilities (Capacitor / iOS notch + home indicator) */
 .safe-area {
   /* Store env() values in CSS vars so we can apply them selectively per layout */
