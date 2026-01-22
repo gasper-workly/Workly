@@ -152,7 +152,7 @@ export default function DashboardLayout({
                   }`}
                 >
                   <div className="relative">
-                    <item.icon className={`h-6 w-6 ${isActive ? 'fill-violet-100' : ''}`} />
+                    <item.icon className={`h-7 w-7 ${isActive ? 'fill-violet-100' : ''}`} />
                     {showNotification && (
                       <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-4 h-4 px-1 bg-violet-600 text-white text-[10px] font-bold rounded-full">
                         {badgeText}
