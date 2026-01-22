@@ -123,7 +123,7 @@ export default function DashboardLayout({
 
       {/* Main Content */}
       <main
-        className={`flex-1 md:pl-56 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0 overflow-y-auto overscroll-contain ios-scroll ${mainBackgroundClassName}`}
+        className={`flex-1 md:pl-56 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0 overflow-y-auto overscroll-contain ios-scroll ${mainBackgroundClassName}`}
       >
         <div className={contentClassName}>{children}</div>
       </main>
@@ -134,7 +134,7 @@ export default function DashboardLayout({
           className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-[9999] safe-area-x"
           // Move nav content upward above the iPhone home indicator curve.
           // We do this inline because `.safe-area-bottom` in globals.css overrides Tailwind `pb-*` utilities.
-          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.25rem)' }}
         >
           <div className="flex justify-around py-2 px-2">
             {currentNavItems.map((item) => {
