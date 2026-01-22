@@ -5,20 +5,19 @@ import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 
 /**
- * Ensures iOS status bar does NOT overlay the WebView (prevents content sitting under notch/time).
- * Safe to include in web builds: it no-ops unless running on a native platform.
+ * Configures iOS status bar for full-screen WebView with CSS-based safe area handling.
  */
 export default function CapacitorStatusBar() {
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
 
-    // Prevent WebView content from rendering under the status bar / notch.
-    void StatusBar.setOverlaysWebView({ overlay: false });
+    // Let the WebView be full screen (go under status bar/home indicator).
+    // CSS env(safe-area-inset-*) will handle padding content away from unsafe regions.
+    void StatusBar.setOverlaysWebView({ overlay: true });
 
-    // Optional: make sure status bar text is readable (dark text on light bg, light text on dark bg).
-    void StatusBar.setStyle({ style: Style.Light });
+    // Dark content (dark text/icons) for light backgrounds
+    void StatusBar.setStyle({ style: Style.Dark });
   }, []);
 
   return null;
 }
-
