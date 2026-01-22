@@ -122,13 +122,13 @@ export default function DashboardLayout({
       </nav>
 
       {/* Main Content */}
-      <main className={`flex-1 md:pl-56 pb-24 md:pb-0 overflow-y-auto ${mainBackgroundClassName}`}>
+      <main className={`flex-1 md:pl-56 pb-28 md:pb-0 overflow-y-auto ${mainBackgroundClassName}`}>
         <div className={contentClassName}>{children}</div>
       </main>
 
       {/* Bottom Navigation Bar (Mobile) */}
       {!hideMobileNav && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-[9999] safe-area-bottom safe-area-x pb-6">
+        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-[9999] safe-area-bottom safe-area-x pb-8">
           <div className="flex justify-around py-2 px-2">
             {currentNavItems.map((item) => {
               const isActive = pathname === item.href;
