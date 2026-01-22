@@ -18,7 +18,7 @@ const config: CapacitorConfig = {
   ios: {
     backgroundColor: '#f9fafb',  // Grey to match app background (was violet)
     contentInset: 'always',
-    scrollEnabled: false
+    scrollEnabled: true
   }
 };
 
