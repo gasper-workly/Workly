@@ -128,7 +128,7 @@ export default function DashboardLayout({
 
       {/* Bottom Navigation Bar (Mobile) */}
       {!hideMobileNav && (
-        <nav className="bg-white border-t border-gray-200 md:hidden z-[9999]">
+        <nav className="bg-white border-t border-gray-200 md:hidden z-[9999] pb-6">
           <div className="flex justify-around py-2 px-2">
             {currentNavItems.map((item) => {
               const isActive = pathname === item.href;
