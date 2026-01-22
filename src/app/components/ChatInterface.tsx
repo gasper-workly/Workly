@@ -459,7 +459,7 @@ export default function ChatInterface({
         </div>
 
         {/* Message Input */}
-        <form onSubmit={handleSubmit} className="mt-auto px-4 pb-5 pt-0 bg-transparent md:static md:p-5 safe-area-bottom">
+        <form onSubmit={handleSubmit} className="mt-auto px-4 pb-5 pt-0 bg-transparent md:static md:p-5 safe-area-bottom safe-area-x">
           <div className="flex items-center gap-3 rounded-full border border-white/15 bg-white/10 px-4 py-2 backdrop-blur-md w-full shadow-[0_10px_25px_rgba(15,23,42,0.2)]">
             <button
               type="button"
