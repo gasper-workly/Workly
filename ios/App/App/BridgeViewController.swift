@@ -17,17 +17,26 @@ class BridgeViewController: CAPBridgeViewController {
     private func applySafeAreaConstraintsToWebView() {
         guard let webView = self.bridge?.webView else { return }
 
-        // Ensure the web view is using AutoLayout.
-        webView.translatesAutoresizingMaskIntoConstraints = false
-
-        // The webView is typically already added by Capacitor, but be defensive.
-        if webView.superview !== self.view {
-            webView.removeFromSuperview()
+        // If Capacitor is using the WKWebView as the controller's root view, we must wrap it.
+        // Otherwise calling `self.view.addSubview(webView)` would try to add a view to itself
+        // and crash with "Can't add self as subview".
+        if webView === self.view {
+            let container = UIView(frame: .zero)
+            container.backgroundColor = .clear
+            self.view = container
+            container.addSubview(webView)
+        } else if webView.superview == nil {
+            // If it's not in the view hierarchy for some reason, add it.
             self.view.addSubview(webView)
         }
 
-        // Remove any existing constraints that pin the webView to the full view bounds.
-        let superview = self.view!
+        // Ensure the web view is using AutoLayout.
+        webView.translatesAutoresizingMaskIntoConstraints = false
+
+        // Constrain inside whichever superview it's in (root container or existing wrapper).
+        guard let superview = webView.superview else { return }
+
+        // Remove any existing constraints that pin the webView to full bounds.
         NSLayoutConstraint.deactivate(
             superview.constraints.filter { c in
                 (c.firstItem as AnyObject?) === webView || (c.secondItem as AnyObject?) === webView
