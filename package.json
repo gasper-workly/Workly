@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "assets": "capacitor-assets generate"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.1",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@capacitor/assets": "^3.0.5",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
