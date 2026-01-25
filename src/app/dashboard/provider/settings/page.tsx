@@ -15,6 +15,12 @@ export default function ProviderSettingsPage() {
   const [emailJobAlerts, setEmailJobAlerts] = useState(true);
   const [ratingUpdates, setRatingUpdates] = useState(true);
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login?role=provider');
+    }
+  }, [authLoading, user, router]);
+
   const handleLanguageChange = async (lang: 'en' | 'sl') => {
     // Update UI immediately
     setLanguage(lang);
@@ -73,10 +79,7 @@ export default function ProviderSettingsPage() {
   }
 
   // Redirect if not logged in
-  if (!user) {
-    router.push('/login?role=provider');
-    return null;
-  }
+  if (!user) return null;
 
   return (
     <DashboardLayout userRole="provider" userName={user.name}>

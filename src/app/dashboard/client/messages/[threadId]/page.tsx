@@ -36,6 +36,12 @@ export default function ClientChatPage() {
   const threadId = params?.threadId;
   const { user, loading: authLoading, refresh: refreshAuth } = useAuth();
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login?role=client');
+    }
+  }, [authLoading, user, router]);
+
   const [thread, setThread] = useState<ChatThreadWithDetails | null>(null);
   const [job, setJob] = useState<JobWithUsers | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -191,11 +197,8 @@ export default function ClientChatPage() {
     );
   }
 
-  // Redirect if not logged in
-  if (!user) {
-    router.push('/login?role=client');
-    return null;
-  }
+  // If auth is resolved and user is missing, redirect effect above will run.
+  if (!user) return null;
 
   // Thread not found
   if (!thread || !job) {

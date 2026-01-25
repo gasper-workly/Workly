@@ -42,6 +42,12 @@ export default function ClientDashboard() {
   const [recentUpdates, setRecentUpdates] = useState<ActivityItem[]>([]);
   const locale = language === 'sl' ? 'sl-SI' : 'en-US';
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login?role=client');
+    }
+  }, [authLoading, user, router]);
+
   // Refresh unread count (for when returning from chat)
   const refreshUnreadCount = async () => {
     if (!user) return;
@@ -266,11 +272,7 @@ export default function ClientDashboard() {
     );
   }
 
-  // Redirect if not logged in
-  if (!user) {
-    router.push('/login?role=client');
-    return null;
-  }
+  if (!user) return null;
 
   // Transform jobs to task format for TaskCard
   const tasks = jobs.map(job => ({

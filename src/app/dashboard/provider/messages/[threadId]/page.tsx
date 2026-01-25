@@ -33,6 +33,12 @@ export default function ProviderChatPage() {
   const threadId = params?.threadId;
   const { user, loading: authLoading } = useAuth();
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login?role=provider');
+    }
+  }, [authLoading, user, router]);
+
   const [thread, setThread] = useState<ChatThreadWithDetails | null>(null);
   const [job, setJob] = useState<JobWithUsers | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -143,11 +149,7 @@ export default function ProviderChatPage() {
     );
   }
 
-  // Redirect if not logged in
-  if (!user) {
-    router.push('/login?role=provider');
-    return null;
-  }
+  if (!user) return null;
 
   // Thread not found
   if (!thread || !job) {

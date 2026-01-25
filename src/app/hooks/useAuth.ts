@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/app/lib/supabase/client';
 import { useTranslation } from '@/app/hooks/useTranslation';
 
@@ -31,6 +31,7 @@ export function useAuth(): UseAuthReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { language: currentLanguage, setLanguage } = useTranslation();
+  const didInitialLoadRef = useRef(false);
 
   const fetchUser = async () => {
     const supabase = createClient();
@@ -126,17 +127,27 @@ export function useAuth(): UseAuthReturn {
   };
 
   useEffect(() => {
-    fetchUser();
+    fetchUser().finally(() => {
+      didInitialLoadRef.current = true;
+    });
 
     // Listen for auth state changes
     const supabase = createClient();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: unknown, session: unknown) => {
+      // On some cold starts, Supabase can emit an initial null session before storage is hydrated.
+      // Never clear user before our first fetch finishes.
+      if (!didInitialLoadRef.current) {
+        return;
+      }
+
       if (session) {
         fetchUser();
-      } else {
-        setUser(null);
-        setLoading(false);
+        return;
       }
+
+      // Only clear after we've initialized and Supabase explicitly says there's no session.
+      setUser(null);
+      setLoading(false);
     });
 
     return () => {

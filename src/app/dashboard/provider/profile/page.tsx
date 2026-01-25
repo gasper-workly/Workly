@@ -38,6 +38,12 @@ function ProviderProfilePageContent() {
   const [loading, setLoading] = useState(true);
   const [totalEarnings, setTotalEarnings] = useState<number>(0);
   const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login?role=provider');
+    }
+  }, [authLoading, user, router]);
   const [showSpecialtiesDropdown, setShowSpecialtiesDropdown] = useState(false);
   // Local state for editable fields
   const [editableData, setEditableData] = useState({
@@ -173,11 +179,7 @@ function ProviderProfilePageContent() {
     );
   }
 
-  // Redirect if not logged in
-  if (!user) {
-    router.push('/login?role=provider');
-    return null;
-  }
+  if (!user) return null;
 
   const levelInfo = getLevelInfo(user.completed_requests || 0);
   const ringSize = 96;

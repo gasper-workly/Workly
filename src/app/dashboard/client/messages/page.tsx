@@ -22,6 +22,12 @@ export default function ClientMessagesPage() {
   const [jobGroups, setJobGroups] = useState<JobGroup[]>([]);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login?role=client');
+    }
+  }, [authLoading, user, router]);
+
   // Clear unread messages flag when viewing messages
   useEffect(() => {
     clearUnreadMessages();
@@ -102,11 +108,8 @@ export default function ClientMessagesPage() {
     );
   }
 
-  // Redirect if not logged in
-  if (!user) {
-    router.push('/login?role=client');
-    return null;
-  }
+  // If auth is resolved and user is missing, redirect effect above will run.
+  if (!user) return null;
 
   return (
     <DashboardLayout userRole="client" userName={user.name}>

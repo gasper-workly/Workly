@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/app/components/DashboardLayout';
 import ServiceRequestForm, { ServiceRequestData } from '@/app/components/ServiceRequestForm';
@@ -15,6 +15,12 @@ export default function NewRequestPage() {
   const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login?role=client');
+    }
+  }, [authLoading, user, router]);
 
   const handleSubmit = async (data: ServiceRequestData) => {
     if (!user) {
@@ -74,11 +80,8 @@ export default function NewRequestPage() {
     );
   }
 
-  // Redirect if not logged in (middleware should handle this, but just in case)
-  if (!user) {
-    router.push('/login?role=client');
-    return null;
-  }
+  // If auth is resolved and user is missing, redirect effect above will run.
+  if (!user) return null;
 
   return (
     <DashboardLayout userRole="client" userName={user.name}>

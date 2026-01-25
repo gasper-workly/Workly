@@ -29,6 +29,12 @@ export default function ProviderMessagesPage() {
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login?role=provider');
+    }
+  }, [authLoading, user, router]);
+
   // Clear unread messages flag when viewing messages
   useEffect(() => {
     clearUnreadMessages();
@@ -117,11 +123,8 @@ export default function ProviderMessagesPage() {
     );
   }
 
-  // Redirect if not logged in
-  if (!user) {
-    router.push('/login?role=provider');
-    return null;
-  }
+  // If auth is resolved and user is missing, redirect effect above will run.
+  if (!user) return null;
 
   return (
     <DashboardLayout userRole="provider" userName={user.name}>

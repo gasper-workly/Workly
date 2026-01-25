@@ -119,6 +119,12 @@ function ProfilePageContent() {
   const [showAllActivities, setShowAllActivities] = useState(false);
 
   useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login?role=client');
+    }
+  }, [authLoading, user, router]);
+
+  useEffect(() => {
     if (!user) return;
     setEditableData({
       name: user.name,
@@ -283,10 +289,7 @@ function ProfilePageContent() {
   }
 
   // Redirect if not logged in
-  if (!user) {
-    router.push('/login?role=client');
-    return null;
-  }
+  if (!user) return null;
 
   return (
     <DashboardLayout userRole="client" userName={user.name}>

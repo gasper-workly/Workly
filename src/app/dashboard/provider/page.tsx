@@ -94,6 +94,12 @@ export default function ProviderDashboard() {
     activeChats: 0,
   });
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login?role=provider');
+    }
+  }, [authLoading, user, router]);
+
   // Get provider's location
   useEffect(() => {
     if (navigator.geolocation) {
@@ -263,11 +269,7 @@ export default function ProviderDashboard() {
     );
   }
 
-  // Redirect if not logged in
-  if (!user) {
-    router.push('/login?role=provider');
-    return null;
-  }
+  if (!user) return null;
 
   // Transform jobs for TaskCard
   const tasks = filteredJobs.map(job => {

@@ -35,6 +35,12 @@ function RequestsPageContent() {
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login?role=client');
+    }
+  }, [authLoading, user, router]);
+
   // Update active tab when URL changes
   useEffect(() => {
     if (statusFromUrl && ['all', 'open', 'completed', 'cancelled'].includes(statusFromUrl)) {
@@ -212,10 +218,7 @@ function RequestsPageContent() {
     );
   }
 
-  if (!user) {
-    router.push('/login?role=client');
-    return null;
-  }
+  if (!user) return null;
 
   return (
     <DashboardLayout

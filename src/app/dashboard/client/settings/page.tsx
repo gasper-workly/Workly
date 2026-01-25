@@ -15,6 +15,12 @@ export default function ClientSettingsPage() {
   const [emailUpdates, setEmailUpdates] = useState(true);
   const [jobStatusUpdates, setJobStatusUpdates] = useState(true);
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login?role=client');
+    }
+  }, [authLoading, user, router]);
+
   const handleLanguageChange = async (lang: 'en' | 'sl') => {
     // Update UI immediately
     setLanguage(lang);
@@ -75,10 +81,7 @@ export default function ClientSettingsPage() {
   }
 
   // Redirect if not logged in
-  if (!user) {
-    router.push('/login?role=client');
-    return null;
-  }
+  if (!user) return null;
 
   return (
     <DashboardLayout userRole="client" userName={user.name}>
