@@ -28,7 +28,16 @@ export default function RootLayout({
       <body>
         <SafeArea>
           <CapacitorStatusBar />
-          <LanguageProvider>{children}</LanguageProvider>
+          <LanguageProvider>
+            {children}
+            {/* Quick access for mobile testing (opens in-app WebView) */}
+            <a
+              href="/debug"
+              className="fixed bottom-24 right-4 z-[10000] flex h-11 w-11 items-center justify-center rounded-full bg-black/80 text-white text-xs font-bold shadow-lg backdrop-blur"
+            >
+              DBG
+            </a>
+          </LanguageProvider>
         </SafeArea>
       </body>
     </html>
