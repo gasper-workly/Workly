@@ -42,9 +42,7 @@ function fuzzCoordinates(lat: number, lng: number): { lat: number; lng: number }
 // Reverse geocode to get area name
 async function getAreaName(lat: number, lng: number): Promise<string> {
   try {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14&addressdetails=1`
-    );
+    const response = await fetch(`/api/geocode/reverse?lat=${lat}&lon=${lng}&zoom=14`);
     const data = await response.json();
     
     if (data.address) {
@@ -70,9 +68,7 @@ async function getAreaName(lat: number, lng: number): Promise<string> {
 // Get full address from coordinates
 async function getFullAddress(lat: number, lng: number): Promise<string> {
   try {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
-    );
+    const response = await fetch(`/api/geocode/reverse?lat=${lat}&lon=${lng}&zoom=18`);
     const data = await response.json();
     return data.display_name || `${lat}, ${lng}`;
   } catch (error) {
