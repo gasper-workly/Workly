@@ -63,7 +63,10 @@ export function useAuth(): UseAuthReturn {
         return;
       }
 
-      // We have a session, now verify it's still valid with the server
+      // We have a session in storage; use it immediately to avoid "logout" on slow network.
+      const sessionUser = session.user;
+
+      // Try to verify/refresh with the server, but don't force logout on transient failures.
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
       
       console.log('[useAuth] getUser result:', { 
@@ -72,25 +75,18 @@ export function useAuth(): UseAuthReturn {
       });
       
       if (authError) {
-        console.log('[useAuth] Auth error (token may be expired):', authError.message);
+        console.log('[useAuth] Auth error (keeping session user, will retry later):', authError.message);
         setError(authError.message);
-        setUser(null);
-        setLoading(false);
-        return;
+        // Continue with session user and fetch profile; token refresh may happen shortly after startup.
       }
 
-      if (!authUser) {
-        console.log('[useAuth] No user returned from getUser');
-        setUser(null);
-        setLoading(false);
-        return;
-      }
+      const effectiveAuthUser = authUser ?? sessionUser;
 
       // Get the user's profile from the database
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', authUser.id)
+        .eq('id', effectiveAuthUser.id)
         .single();
 
       if (profileError) {
