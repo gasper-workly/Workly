@@ -15,6 +15,7 @@ function LoginContent() {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [booting, setBooting] = useState(true);
   
   // Get the role from URL parameters, default to 'client'
   const roleParam = searchParams.get('role') || 'client';
@@ -25,7 +26,10 @@ function LoginContent() {
       try {
         const supabase = createClient();
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user) return;
+        if (!session?.user) {
+          setBooting(false);
+          return;
+        }
 
         // Try to resolve role from DB; fallback to cached profile if offline.
         const { data: profile } = await supabase
@@ -49,12 +53,23 @@ function LoginContent() {
         // As a last resort, go to requested role
         router.replace(`/dashboard/${roleParam}`);
       } catch {
-        // ignore
+        // If restore fails, fall back to showing login form
+        setBooting(false);
       }
     };
 
     restore();
   }, [router, roleParam]);
+
+  // Prevent a 1s flash of the login form on mobile app cold start.
+  if (booting) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8">
+        <img src="/workly-logo.png" alt="Workly" className="h-32 w-auto mb-4" />
+        <p className="text-gray-600">{t('common.loading')}</p>
+      </div>
+    );
+  }
 
   const handleSubmit = async (email: string, password: string) => {
     setIsLoading(true);
