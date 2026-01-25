@@ -262,8 +262,8 @@ export function subscribeToOrders(
         table: 'orders',
         filter: `job_id=eq.${jobId}`,
       },
-      (payload) => {
-        callback(payload.new as Order);
+      (payload: { new: Record<string, unknown> }) => {
+        callback(payload.new as unknown as Order);
       }
     )
     .subscribe();

@@ -257,7 +257,7 @@ export async function updatePassword(newPassword: string): Promise<void> {
 export function onAuthStateChange(callback: (user: AuthUser | null) => void) {
   const supabase = createClient();
   
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: unknown, session: { user?: { id: string } } | null) => {
     if (session?.user) {
       const { data: profile } = await supabase
         .from('profiles')

@@ -62,7 +62,7 @@ export async function getChatThreads(userId: string): Promise<ChatThreadWithDeta
 
   // Get last messages for all threads in one query instead of N queries
   // We fetch more than needed and filter in JS since Supabase doesn't support DISTINCT ON easily
-  const jobIds = threads.map(t => t.job_id);
+  const jobIds = threads.map((t: { job_id: string }) => t.job_id);
   const { data: lastMessages } = await supabase
     .from('messages')
     .select('job_id, id, sender_id, content, image_url, created_at')
@@ -72,14 +72,14 @@ export async function getChatThreads(userId: string): Promise<ChatThreadWithDeta
 
   // Group messages by job_id and get the first (most recent) for each
   const messagesByJob = new Map<string, Message>();
-  lastMessages?.forEach(msg => {
+  lastMessages?.forEach((msg: { job_id: string; id: string; sender_id: string; content: string; image_url: string | null; created_at: string }) => {
     if (!messagesByJob.has(msg.job_id)) {
       messagesByJob.set(msg.job_id, msg as Message);
     }
   });
 
   // Combine threads with their last messages
-  return threads.map(thread => ({
+  return threads.map((thread: { job_id: string }) => ({
     ...thread,
     last_message: messagesByJob.get(thread.job_id),
   })) as ChatThreadWithDetails[];
@@ -255,7 +255,7 @@ export async function getUnreadCount(userId: string): Promise<number> {
     return 0;
   }
 
-  const jobIds = threads.map(t => t.job_id);
+  const jobIds = threads.map((t: { job_id: string }) => t.job_id);
   
   const { count, error } = await supabase
     .from('messages')
@@ -327,8 +327,8 @@ export function subscribeToMessages(
         table: 'messages',
         filter: `job_id=eq.${jobId}`,
       },
-      (payload) => {
-        callback(payload.new as Message);
+      (payload: { new: Record<string, unknown> }) => {
+        callback(payload.new as unknown as Message);
       }
     )
     .subscribe();
@@ -354,8 +354,8 @@ export function subscribeToChatThreads(
         schema: 'public',
         table: 'chat_threads',
       },
-      async (payload) => {
-        const thread = payload.new as ChatThread;
+      async (payload: { new: Record<string, unknown> }) => {
+        const thread = payload.new as unknown as ChatThread;
         // Only notify if user is a participant
         if (thread.client_id === userId || thread.provider_id === userId) {
           callback(thread);
