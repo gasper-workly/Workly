@@ -1,10 +1,52 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/app/hooks/useTranslation';
+import { createClient } from '@/app/lib/supabase/client';
+import { isCapacitorNative } from '@/app/lib/supabase/capacitor-storage';
+import { loadCachedProfile } from '@/app/lib/authProfileCache';
 
 export default function Home() {
+  const router = useRouter();
   const { t } = useTranslation();
+
+  // Mobile app behavior: if user already has a session, go straight to dashboard.
+  // Web behavior: keep showing the marketing home page.
+  useEffect(() => {
+    const restore = async () => {
+      try {
+        if (!isCapacitorNative()) return;
+
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) return;
+
+        // Try DB role first, fallback to cached profile.
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, role')
+          .eq('id', session.user.id)
+          .single();
+
+        const roleFromDb = profile?.role as string | undefined;
+        if (roleFromDb === 'client' || roleFromDb === 'provider' || roleFromDb === 'admin') {
+          router.replace(`/dashboard/${roleFromDb === 'admin' ? 'client' : roleFromDb}`);
+          return;
+        }
+
+        const cached = await loadCachedProfile(session.user.id);
+        if (cached?.role) {
+          router.replace(`/dashboard/${cached.role === 'admin' ? 'client' : cached.role}`);
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    restore();
+  }, [router]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8">
