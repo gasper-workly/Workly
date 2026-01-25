@@ -36,10 +36,43 @@ export function useAuth(): UseAuthReturn {
     const supabase = createClient();
     
     try {
-      // Get the authenticated user
+      console.log('[useAuth] Starting fetchUser...');
+      
+      // First try to get session from storage (doesn't make network call)
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      console.log('[useAuth] getSession result:', { 
+        hasSession: !!session, 
+        hasUser: !!session?.user,
+        error: sessionError?.message 
+      });
+      
+      if (sessionError) {
+        console.log('[useAuth] Session error:', sessionError.message);
+        setError(sessionError.message);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      // If no session in storage, user is not logged in
+      if (!session?.user) {
+        console.log('[useAuth] No session found, user not logged in');
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      // We have a session, now verify it's still valid with the server
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
       
+      console.log('[useAuth] getUser result:', { 
+        hasUser: !!authUser, 
+        error: authError?.message 
+      });
+      
       if (authError) {
+        console.log('[useAuth] Auth error (token may be expired):', authError.message);
         setError(authError.message);
         setUser(null);
         setLoading(false);
@@ -47,6 +80,7 @@ export function useAuth(): UseAuthReturn {
       }
 
       if (!authUser) {
+        console.log('[useAuth] No user returned from getUser');
         setUser(null);
         setLoading(false);
         return;
