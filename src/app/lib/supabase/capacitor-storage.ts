@@ -7,7 +7,7 @@ let isNativeResult: boolean | null = null;
 /**
  * Check if we're running inside a Capacitor native app
  */
-const isNative = (): boolean => {
+export const isCapacitorNative = (): boolean => {
   // Return cached result if available
   if (isNativeResult !== null) {
     return isNativeResult;
@@ -49,7 +49,7 @@ const isNative = (): boolean => {
 export const capacitorStorage = {
   async getItem(key: string): Promise<string | null> {
     try {
-      if (isNative()) {
+      if (isCapacitorNative()) {
         const { value } = await Preferences.get({ key });
         console.log('[CapacitorStorage] getItem (native):', key, value ? 'found' : 'null');
         return value;
@@ -72,7 +72,7 @@ export const capacitorStorage = {
   
   async setItem(key: string, value: string): Promise<void> {
     try {
-      if (isNative()) {
+      if (isCapacitorNative()) {
         await Preferences.set({ key, value });
         console.log('[CapacitorStorage] setItem (native):', key);
         return;
@@ -92,7 +92,7 @@ export const capacitorStorage = {
   
   async removeItem(key: string): Promise<void> {
     try {
-      if (isNative()) {
+      if (isCapacitorNative()) {
         await Preferences.remove({ key });
         console.log('[CapacitorStorage] removeItem (native):', key);
         return;

@@ -2,13 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/app/lib/supabase/client';
+import { isCapacitorNative } from '@/app/lib/supabase/capacitor-storage';
 
 export default function DebugPage() {
   const [data, setData] = useState<{
     user: unknown;
     profile: unknown;
+    session: unknown;
+    env: unknown;
     error: string | null;
-  }>({ user: null, profile: null, error: null });
+  }>({ user: null, profile: null, session: null, env: null, error: null });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,17 +19,25 @@ export default function DebugPage() {
       const supabase = createClient();
       
       try {
+        const env = {
+          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+          isCapacitorNative: isCapacitorNative(),
+        };
+
+        // Get session (from storage) first
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
         // Get current user
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         
-        if (userError) {
-          setData({ user: null, profile: null, error: userError.message });
+        if (sessionError || userError) {
+          setData({ user: null, profile: null, session: session ?? null, env, error: (sessionError?.message || userError?.message) ?? 'Unknown auth error' });
           setLoading(false);
           return;
         }
 
         if (!user) {
-          setData({ user: null, profile: null, error: 'Not logged in' });
+          setData({ user: null, profile: null, session: session ?? null, env, error: 'Not logged in' });
           setLoading(false);
           return;
         }
@@ -45,10 +56,21 @@ export default function DebugPage() {
             user_metadata: user.user_metadata,
           },
           profile: profile,
+          session: session
+            ? {
+                hasSession: true,
+                expires_at: (session as { expires_at?: number }).expires_at ?? null,
+                user: {
+                  id: (session as { user?: { id?: string; email?: string } }).user?.id ?? null,
+                  email: (session as { user?: { email?: string } }).user?.email ?? null,
+                },
+              }
+            : { hasSession: false },
+          env,
           error: profileError?.message || null,
         });
       } catch (err) {
-        setData({ user: null, profile: null, error: String(err) });
+        setData({ user: null, profile: null, session: null, env: { isCapacitorNative: isCapacitorNative() }, error: String(err) });
       }
       
       setLoading(false);
@@ -68,6 +90,20 @@ export default function DebugPage() {
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <h1 className="text-2xl font-bold mb-6">Debug Info</h1>
+
+      <div className="bg-white p-6 rounded-lg shadow mb-6">
+        <h2 className="text-lg font-semibold mb-2">Environment</h2>
+        <pre className="bg-gray-50 p-4 rounded overflow-auto text-sm">
+          {JSON.stringify(data.env, null, 2)}
+        </pre>
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow mb-6">
+        <h2 className="text-lg font-semibold mb-2">Session (from storage)</h2>
+        <pre className="bg-gray-50 p-4 rounded overflow-auto text-sm">
+          {JSON.stringify(data.session, null, 2)}
+        </pre>
+      </div>
       
       <div className="bg-white p-6 rounded-lg shadow mb-6">
         <h2 className="text-lg font-semibold mb-2">Auth User</h2>
