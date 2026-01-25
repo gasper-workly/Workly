@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/app/lib/supabase/client';
 import { useTranslation } from '@/app/hooks/useTranslation';
+import { loadCachedProfile, saveCachedProfile } from '@/app/lib/authProfileCache';
 
 export interface AuthUser {
   id: string;
@@ -91,13 +92,24 @@ export function useAuth(): UseAuthReturn {
         .single();
 
       if (profileError) {
+        console.log('[useAuth] Profile fetch failed, trying cached profile:', profileError.message);
         setError(profileError.message);
+
+        // If we have a cached profile for this user, keep them "logged in" offline / during transient DB issues.
+        const cached = await loadCachedProfile(effectiveAuthUser.id);
+        if (cached) {
+          setUser(cached);
+          setError(null);
+          setLoading(false);
+          return;
+        }
+
         setUser(null);
         setLoading(false);
         return;
       }
 
-      setUser({
+      const nextUser: AuthUser = {
         id: profile.id,
         email: profile.email,
         name: profile.name,
@@ -110,7 +122,11 @@ export function useAuth(): UseAuthReturn {
         completed_requests: profile.completed_requests,
         is_verified: profile.is_verified,
         created_at: profile.created_at,
-      });
+      };
+
+      setUser(nextUser);
+      // Cache profile for offline/cold-start restores
+      await saveCachedProfile(nextUser);
 
       // Sync UI language with the account preference (persists across devices)
       const preferred = profile.language === 'en' ? 'en' : 'sl';

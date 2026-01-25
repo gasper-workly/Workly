@@ -1,11 +1,13 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import LoginForm from '@/app/components/LoginForm';
 import { login, AuthError } from '@/app/lib/auth';
 import { useTranslation } from '@/app/hooks/useTranslation';
+import { createClient } from '@/app/lib/supabase/client';
+import { loadCachedProfile } from '@/app/lib/authProfileCache';
 
 function LoginContent() {
   const router = useRouter();
@@ -16,6 +18,43 @@ function LoginContent() {
   
   // Get the role from URL parameters, default to 'client'
   const roleParam = searchParams.get('role') || 'client';
+
+  // If a session already exists (e.g. after swipe-kill + reopen), skip the login form.
+  useEffect(() => {
+    const restore = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) return;
+
+        // Try to resolve role from DB; fallback to cached profile if offline.
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, role')
+          .eq('id', session.user.id)
+          .single();
+
+        const roleFromDb = profile?.role as string | undefined;
+        if (roleFromDb === 'client' || roleFromDb === 'provider' || roleFromDb === 'admin') {
+          router.replace(`/dashboard/${roleFromDb === 'admin' ? 'client' : roleFromDb}`);
+          return;
+        }
+
+        const cached = await loadCachedProfile(session.user.id);
+        if (cached?.role) {
+          router.replace(`/dashboard/${cached.role === 'admin' ? 'client' : cached.role}`);
+          return;
+        }
+
+        // As a last resort, go to requested role
+        router.replace(`/dashboard/${roleParam}`);
+      } catch {
+        // ignore
+      }
+    };
+
+    restore();
+  }, [router, roleParam]);
 
   const handleSubmit = async (email: string, password: string) => {
     setIsLoading(true);
