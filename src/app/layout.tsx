@@ -2,6 +2,7 @@ import './globals.css';
 import { LanguageProvider } from '@/app/context/LanguageContext';
 import CapacitorStatusBar from '@/app/components/CapacitorStatusBar';
 import SafeArea from '@/app/components/SafeArea';
+import AuthBootOverlay from '@/app/components/AuthBootOverlay';
 
 export const metadata = {
   title: 'Workly',
@@ -30,6 +31,7 @@ export default function RootLayout({
           <CapacitorStatusBar />
           <LanguageProvider>
             {children}
+            <AuthBootOverlay />
             {/* Quick access for mobile testing (opens in-app WebView) */}
             <a
               href="/debug"
