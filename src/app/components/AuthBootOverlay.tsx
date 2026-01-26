@@ -16,6 +16,16 @@ export default function AuthBootOverlay() {
 
   // Start booting immediately on mobile so we can cover any UI before the Capacitor bridge is ready.
   const [booting, setBooting] = useState(true);
+  const [redirecting, setRedirecting] = useState(false);
+  const [bootStartedAt] = useState(() => Date.now());
+
+  // Once we have navigated away from login/home, drop the overlay.
+  useEffect(() => {
+    if (redirecting && pathname.startsWith('/dashboard')) {
+      setRedirecting(false);
+      setBooting(false);
+    }
+  }, [pathname, redirecting]);
 
   useEffect(() => {
     let cancelled = false;
@@ -69,6 +79,7 @@ export default function AuthBootOverlay() {
 
         const roleFromDb = normalizeRole(profile?.role);
         if (roleFromDb) {
+          setRedirecting(true);
           router.replace(`/dashboard/${roleFromDb}`);
           return;
         }
@@ -76,14 +87,30 @@ export default function AuthBootOverlay() {
         const cached = await loadCachedProfile(session.user.id);
         const roleFromCache = normalizeRole(cached?.role);
         if (roleFromCache) {
+          setRedirecting(true);
           router.replace(`/dashboard/${roleFromCache}`);
           return;
         }
 
         // As a last resort, default to client dashboard.
+        setRedirecting(true);
         router.replace('/dashboard/client');
       } finally {
-        if (!cancelled) setBooting(false);
+        // If we initiated a redirect, keep the overlay until navigation completes.
+        if (cancelled) return;
+        if (redirecting) return;
+
+        // Ensure a minimum overlay display time to avoid flashes.
+        const elapsed = Date.now() - bootStartedAt;
+        const minMs = 600;
+        if (elapsed < minMs) {
+          setTimeout(() => {
+            if (!cancelled) setBooting(false);
+          }, minMs - elapsed);
+          return;
+        }
+
+        setBooting(false);
       }
     };
 
@@ -91,7 +118,7 @@ export default function AuthBootOverlay() {
     return () => {
       cancelled = true;
     };
-  }, [pathname, router]);
+  }, [bootStartedAt, pathname, redirecting, router]);
 
   if (!booting) return null;
 
