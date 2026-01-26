@@ -14,21 +14,40 @@ export default function AuthBootOverlay() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [booting, setBooting] = useState(() => isCapacitorNative());
+  // Start booting immediately on mobile so we can cover any UI before the Capacitor bridge is ready.
+  const [booting, setBooting] = useState(true);
 
   useEffect(() => {
-    // Only for the mobile app (Capacitor). Web should behave normally.
-    if (!isCapacitorNative()) return;
-
     let cancelled = false;
 
     const run = async () => {
       try {
+        const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+        const isMobileUa = /Android|iPhone|iPad|iPod/i.test(ua);
+
         // Only show the overlay briefly on routes where users commonly "see login".
         const shouldAutoRedirect =
           pathname === '/' || pathname === '/login';
 
-        if (!shouldAutoRedirect) {
+        if (!isMobileUa || !shouldAutoRedirect) {
+          setBooting(false);
+          return;
+        }
+
+        // Wait briefly for the Capacitor bridge to become available on cold start.
+        // If it never becomes available, we're in a normal mobile browser → don't block the UI.
+        let isNative = false;
+        for (let i = 0; i < 10; i++) {
+          if (isCapacitorNative()) {
+            isNative = true;
+            break;
+          }
+          // 50ms * 10 = 500ms max wait
+          await new Promise((r) => setTimeout(r, 50));
+          if (cancelled) return;
+        }
+
+        if (!isNative) {
           setBooting(false);
           return;
         }
