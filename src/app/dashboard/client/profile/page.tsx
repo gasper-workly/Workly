@@ -14,10 +14,11 @@ import {
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { useAuth } from '@/app/hooks/useAuth';
-import { updateProfile } from '@/app/lib/auth';
+import { logout, updateProfile } from '@/app/lib/auth';
 import { uploadAvatarAndGetPublicUrl } from '@/app/lib/avatars';
 import { getClientJobs } from '@/app/lib/jobs';
 import { getClientReviews } from '@/app/lib/reviews';
+import { clearCachedProfile } from '@/app/lib/authProfileCache';
 
 // Activity item type
 interface ActivityItem {
@@ -117,6 +118,18 @@ function ProfilePageContent() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [activitiesLoading, setActivitiesLoading] = useState(true);
   const [showAllActivities, setShowAllActivities] = useState(false);
+
+  const handleLogout = async () => {
+    if (!user) return;
+    const ok = confirm('Log out?');
+    if (!ok) return;
+    try {
+      await logout();
+    } finally {
+      await clearCachedProfile(user.id);
+      router.replace('/login?role=client');
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -300,6 +313,12 @@ function ProfilePageContent() {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-semibold text-black">My Profile</h1>
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleLogout}
+              className="inline-flex items-center px-3 py-1.5 rounded-md bg-red-50 text-red-700 text-xs font-semibold hover:bg-red-100 border border-red-200"
+            >
+              Log out
+            </button>
             {isEditing && (
               <button
                 onClick={handleSave}

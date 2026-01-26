@@ -7,8 +7,9 @@ import UserAvatar from '@/app/components/UserAvatar';
 import { useAuth } from '@/app/hooks/useAuth';
 import { getProviderReviews, getProviderStats, ReviewWithDetails } from '@/app/lib/reviews';
 import { getProviderTotalEarningsEur } from '@/app/lib/orders';
-import { updateProfile } from '@/app/lib/auth';
+import { logout, updateProfile } from '@/app/lib/auth';
 import { uploadAvatarAndGetPublicUrl } from '@/app/lib/avatars';
+import { clearCachedProfile } from '@/app/lib/authProfileCache';
 import { 
   BanknotesIcon,
   CheckCircleIcon,
@@ -38,6 +39,18 @@ function ProviderProfilePageContent() {
   const [loading, setLoading] = useState(true);
   const [totalEarnings, setTotalEarnings] = useState<number>(0);
   const router = useRouter();
+
+  const handleLogout = async () => {
+    if (!user) return;
+    const ok = confirm('Log out?');
+    if (!ok) return;
+    try {
+      await logout();
+    } finally {
+      await clearCachedProfile(user.id);
+      router.replace('/login?role=provider');
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -248,6 +261,12 @@ function ProviderProfilePageContent() {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-semibold text-black">{t('providerProfilePage.title')}</h1>
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleLogout}
+              className="inline-flex items-center px-3 py-1.5 rounded-md bg-red-50 text-red-700 text-xs font-semibold hover:bg-red-100 border border-red-200"
+            >
+              Log out
+            </button>
             {isEditing && (
               <button
                 onClick={handleSave}

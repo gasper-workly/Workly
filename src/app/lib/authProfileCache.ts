@@ -21,3 +21,10 @@ export async function saveCachedProfile(user: AuthUser): Promise<void> {
   }
 }
 
+export async function clearCachedProfile(userId: string): Promise<void> {
+  try {
+    await capacitorStorage.removeItem(`${PREFIX}${userId}`);
+  } catch {
+    // ignore
+  }
+}
