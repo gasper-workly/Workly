@@ -125,7 +125,9 @@ export default function DashboardLayout({
 
       {/* Main Content */}
       <main
-        className={`workly-scroll-root flex-1 md:pl-56 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0 ${
+        className={`workly-scroll-root flex-1 md:pl-56 ${
+          disableMainScroll ? 'pb-0' : 'pb-[calc(5.5rem+env(safe-area-inset-bottom))]'
+        } md:pb-0 ${
           disableMainScroll ? 'overflow-hidden' : 'overflow-y-auto'
         } overscroll-contain ios-scroll ${mainBackgroundClassName}`}
       >

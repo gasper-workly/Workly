@@ -91,8 +91,8 @@ export default function ChatInterface({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [keyboardOffsetPx, setKeyboardOffsetPx] = useState(0);
   const [inputFocused, setInputFocused] = useState(false);
+  const [viewportHeightPx, setViewportHeightPx] = useState<number | null>(null);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -107,19 +107,15 @@ export default function ChatInterface({
     if (!vv) return;
 
     const update = () => {
-      // Only apply keyboard offset while the message input is focused.
-      // This avoids pushing the whole layout up when the keyboard isn't actually being used.
       if (!inputFocused) {
-        setKeyboardOffsetPx(0);
+        setViewportHeightPx(null);
         return;
       }
 
-      // Approximate keyboard height using VisualViewport (works in iOS Safari/WebView and many Android WebViews).
-      const raw = window.innerHeight - vv.height - vv.offsetTop;
-      const next = raw > 0 ? Math.round(raw) : 0;
-
-      // Ignore tiny diffs (address bar / viewport chrome) so we don't jitter.
-      setKeyboardOffsetPx(next >= 80 ? next : 0);
+      // Prefer resizing the chat container to the visual viewport height instead of inflating padding.
+      // This keeps the header visible and avoids pushing the whole chat upward.
+      const h = Math.round(vv.height);
+      setViewportHeightPx(h > 0 ? h : null);
     };
 
     update();
@@ -239,8 +235,11 @@ export default function ChatInterface({
     otherUserId;
 
   return (
-    <div className="w-full">
-      <div className="w-full rounded-none md:rounded-[32px] bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800 text-white flex flex-col min-h-[calc(100svh-4rem)] overflow-hidden">
+    <div className="w-full h-full">
+      <div
+        className="w-full h-full rounded-none md:rounded-[32px] bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800 text-white flex flex-col overflow-hidden"
+        style={viewportHeightPx ? { height: `${viewportHeightPx}px` } : undefined}
+      >
         {/* Header */}
         <div className="p-6 pb-4 border-b border-white/25">
           <div className="flex items-start gap-3">
@@ -370,7 +369,7 @@ export default function ChatInterface({
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4 pb-32">
+        <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4">
           {messages.map((message) => {
             const isCurrentUser = message.senderId === currentUserId;
             return (
@@ -495,8 +494,8 @@ export default function ChatInterface({
         <form
           onSubmit={handleSubmit}
           className="mt-auto px-4 pt-0 bg-transparent md:static md:p-5 safe-area-x"
-          // iOS/Android keyboard + iPhone home indicator.
-          style={{ paddingBottom: `calc(env(safe-area-inset-bottom) + 1.25rem + ${keyboardOffsetPx}px)` }}
+          // iPhone home indicator
+          style={{ paddingBottom: `calc(env(safe-area-inset-bottom) + 1.25rem)` }}
         >
           <div className="flex items-center gap-3 rounded-full border border-white/15 bg-white/10 px-4 py-2 backdrop-blur-md w-full shadow-[0_10px_25px_rgba(15,23,42,0.2)]">
             <button
