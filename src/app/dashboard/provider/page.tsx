@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/app/components/DashboardLayout';
 import TaskCard from '@/app/components/TaskCard';
 import { createChatThread, getUnreadCount, subscribeToUnreadMessagesForUser } from '@/app/lib/chat';
-import { getAllJobs, getProviderJobs, JobWithUsers } from '@/app/lib/jobs';
+import { getAllJobs, getProviderJobs, JobWithUsers, subscribeToOpenJobs } from '@/app/lib/jobs';
 import { getProviderStats } from '@/app/lib/reviews';
 import { getProviderTotalEarningsEur } from '@/app/lib/orders';
 import { useAuth } from '@/app/hooks/useAuth';
@@ -182,6 +182,35 @@ export default function ProviderDashboard() {
       if (unsubscribe) unsubscribe();
     };
   }, [user?.id]);
+
+  // Real-time: update open jobs list while waiting on dashboard (no polling).
+  useEffect(() => {
+    let disposed = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const refreshOpenJobs = () => {
+      if (disposed) return;
+      if (timer) return;
+      timer = setTimeout(async () => {
+        timer = null;
+        try {
+          const allJobs = await getAllJobs({ status: 'open' });
+          if (!disposed) setAvailableJobs(allJobs);
+        } catch {
+          // ignore
+        }
+      }, 400);
+    };
+
+    // Initial subscription; we refetch on relevant DB changes.
+    const unsubscribe = subscribeToOpenJobs(refreshOpenJobs);
+
+    return () => {
+      disposed = true;
+      if (timer) clearTimeout(timer);
+      unsubscribe();
+    };
+  }, []);
 
   // Fetch jobs and stats
   useEffect(() => {

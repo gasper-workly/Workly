@@ -230,6 +230,41 @@ export async function assignProvider(jobId: string, providerId: string): Promise
   return data as Job;
 }
 
+// Real-time: notify when the set of open jobs might have changed.
+// We trigger for:
+// - INSERT with status=open (new job posted)
+// - UPDATE where old.status=open OR new.status=open (job opened/closed/assigned/etc.)
+export function subscribeToOpenJobs(onChange: () => void): () => void {
+  const supabase = createClient();
+
+  const channel = supabase
+    .channel('jobs:open')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'jobs' },
+      (payload: { new?: Record<string, unknown>; old?: Record<string, unknown> }) => {
+        const nextStatus = (payload.new as { status?: string } | undefined)?.status;
+        const prevStatus = (payload.old as { status?: string } | undefined)?.status;
+
+        // New open job
+        if (nextStatus === 'open') {
+          onChange();
+          return;
+        }
+
+        // Open job changed to something else (assigned/completed/etc.)
+        if (prevStatus === 'open') {
+          onChange();
+        }
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}
+
 // Update a job
 export async function updateJob(jobId: string, updates: Partial<Pick<Job, 
   'title' | 'description' | 'category' | 'location' | 'latitude' | 'longitude' | 
