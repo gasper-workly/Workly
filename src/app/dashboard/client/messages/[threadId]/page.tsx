@@ -234,9 +234,9 @@ export default function ClientChatPage() {
       disableMainScroll
       backgroundClassName="bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800"
       mainBackgroundClassName="bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800"
-      contentClassName="w-full px-0 py-0 min-h-full"
+      contentClassName="w-full px-0 py-0 h-full"
     >
-      <div className="w-full">
+      <div className="w-full h-full flex flex-col min-h-0">
         <ChatInterface
           taskId={job.id}
           taskTitle={job.title}

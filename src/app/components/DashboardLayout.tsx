@@ -131,7 +131,13 @@ export default function DashboardLayout({
           disableMainScroll ? 'overflow-hidden' : 'overflow-y-auto'
         } overscroll-contain ios-scroll ${mainBackgroundClassName}`}
       >
-        <div className={contentClassName}>{children}</div>
+        <div
+          className={`${contentClassName} ${
+            disableMainScroll ? 'h-full flex flex-col min-h-0' : ''
+          }`}
+        >
+          {children}
+        </div>
       </main>
 
       {/* Bottom Navigation Bar (Mobile) */}

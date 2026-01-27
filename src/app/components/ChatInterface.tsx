@@ -96,6 +96,27 @@ export default function ChatInterface({
   const inputBarRef = useRef<HTMLDivElement>(null);
   const [inputBarHeightPx, setInputBarHeightPx] = useState(0);
 
+  // Prevent the page itself from scrolling while in chat (we only want the messages list to scroll).
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const body = document.body;
+    const html = document.documentElement;
+
+    const prevBodyOverflow = body.style.overflow;
+    const prevBodyOverscroll = (body.style as unknown as { overscrollBehavior?: string }).overscrollBehavior;
+    const prevHtmlOverflow = html.style.overflow;
+
+    body.style.overflow = 'hidden';
+    (body.style as unknown as { overscrollBehavior?: string }).overscrollBehavior = 'none';
+    html.style.overflow = 'hidden';
+
+    return () => {
+      body.style.overflow = prevBodyOverflow;
+      (body.style as unknown as { overscrollBehavior?: string }).overscrollBehavior = prevBodyOverscroll || '';
+      html.style.overflow = prevHtmlOverflow;
+    };
+  }, []);
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
