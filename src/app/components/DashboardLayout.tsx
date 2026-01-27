@@ -81,7 +81,7 @@ export default function DashboardLayout({
     return () => {
       cancelled = true;
     };
-  }, [user?.id, userRole]);
+  }, [user?.id, userRole, pathname]);
 
   const effectiveUnreadCount =
     typeof unreadMessagesCount === 'number'

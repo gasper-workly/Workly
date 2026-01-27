@@ -96,6 +96,11 @@ function ProviderProfilePageContent() {
         // Unread reviews badge count (simple notification)
         const unread = await getUnreadReviewsCount(user.id);
         setUnreadReviewsCount(unread);
+        // Simpler reset: as soon as provider opens Profile page, mark reviews as seen.
+        if (unread > 0) {
+          await markReviewsSeen(user.id);
+          setUnreadReviewsCount(0);
+        }
         
         // Fetch stats for average rating
         const stats = await getProviderStats(user.id);
@@ -116,31 +121,7 @@ function ProviderProfilePageContent() {
     }
   }, [user]);
 
-  // Reset unread reviews when the Reviews section becomes visible
-  useEffect(() => {
-    if (!user?.id) return;
-    if (unreadReviewsCount <= 0) return;
-    const el = reviewsSectionRef.current;
-    if (!el) return;
-
-    if (typeof IntersectionObserver === 'undefined') return;
-
-    const obs = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry?.isIntersecting) {
-          // Fire and forget; local UI updates immediately
-          void markReviewsSeen(user.id);
-          setUnreadReviewsCount(0);
-          obs.disconnect();
-        }
-      },
-      { threshold: 0.2 }
-    );
-
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [user?.id, unreadReviewsCount]);
+  // Note: we intentionally reset on Profile open (simple + reliable across devices).
 
   const sortedReviews = [...reviews].sort((a, b) => {
     if (sortMode === 'newest') {
