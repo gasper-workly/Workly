@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { createClient } from '@/app/lib/supabase/client';
 import { isCapacitorNative } from '@/app/lib/supabase/capacitor-storage';
 
@@ -10,8 +11,9 @@ export default function DebugPage() {
     profile: unknown;
     session: unknown;
     env: unknown;
+    version: unknown;
     error: string | null;
-  }>({ user: null, profile: null, session: null, env: null, error: null });
+  }>({ user: null, profile: null, session: null, env: null, version: null, error: null });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,7 +24,12 @@ export default function DebugPage() {
         const env = {
           userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
           isCapacitorNative: isCapacitorNative(),
+          platform: Capacitor.getPlatform(),
         };
+
+        const version = await fetch('/api/version', { cache: 'no-store' })
+          .then((r) => r.json())
+          .catch((e) => ({ error: String(e) }));
 
         // Get session (from storage) first
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -31,13 +38,13 @@ export default function DebugPage() {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         
         if (sessionError || userError) {
-          setData({ user: null, profile: null, session: session ?? null, env, error: (sessionError?.message || userError?.message) ?? 'Unknown auth error' });
+          setData({ user: null, profile: null, session: session ?? null, env, version, error: (sessionError?.message || userError?.message) ?? 'Unknown auth error' });
           setLoading(false);
           return;
         }
 
         if (!user) {
-          setData({ user: null, profile: null, session: session ?? null, env, error: 'Not logged in' });
+          setData({ user: null, profile: null, session: session ?? null, env, version, error: 'Not logged in' });
           setLoading(false);
           return;
         }
@@ -67,10 +74,18 @@ export default function DebugPage() {
               }
             : { hasSession: false },
           env,
+          version,
           error: profileError?.message || null,
         });
       } catch (err) {
-        setData({ user: null, profile: null, session: null, env: { isCapacitorNative: isCapacitorNative() }, error: String(err) });
+        setData({
+          user: null,
+          profile: null,
+          session: null,
+          env: { isCapacitorNative: isCapacitorNative() },
+          version: null,
+          error: String(err),
+        });
       }
       
       setLoading(false);
@@ -95,6 +110,13 @@ export default function DebugPage() {
         <h2 className="text-lg font-semibold mb-2">Environment</h2>
         <pre className="bg-gray-50 p-4 rounded overflow-auto text-sm">
           {JSON.stringify(data.env, null, 2)}
+        </pre>
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow mb-6">
+        <h2 className="text-lg font-semibold mb-2">Version (server)</h2>
+        <pre className="bg-gray-50 p-4 rounded overflow-auto text-sm">
+          {JSON.stringify(data.version, null, 2)}
         </pre>
       </div>
 
