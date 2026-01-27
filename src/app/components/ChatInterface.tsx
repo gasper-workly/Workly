@@ -281,9 +281,9 @@ export default function ChatInterface({
   return (
     <div className="w-full h-full relative">
       {/* Ensure iOS safe-area (status bar + home indicator) matches the chat gradient */}
-      <div className="fixed inset-0 -z-10 bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800 pointer-events-none" />
+      <div className="fixed inset-0 z-0 bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800 pointer-events-none" />
 
-      <div className="w-full h-full rounded-none md:rounded-[32px] bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800 text-white flex flex-col overflow-hidden">
+      <div className="relative z-10 w-full h-full rounded-none md:rounded-[32px] bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800 text-white flex flex-col overflow-hidden">
         {/* Header */}
         <div className="p-6 pb-4 border-b border-white/25">
           <div className="flex items-start gap-3">
