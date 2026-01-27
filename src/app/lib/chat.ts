@@ -192,7 +192,14 @@ export async function sendMessage(message: {
     .single();
 
   if (error) {
-    throw new Error(error.message);
+    const anyErr = error as unknown as { message?: string; details?: string; hint?: string; code?: string };
+    const parts = [
+      anyErr.message || 'Unknown error',
+      anyErr.code ? `code=${anyErr.code}` : null,
+      anyErr.details ? `details=${anyErr.details}` : null,
+      anyErr.hint ? `hint=${anyErr.hint}` : null,
+    ].filter(Boolean);
+    throw new Error(parts.join(' | '));
   }
 
   return data as Message;

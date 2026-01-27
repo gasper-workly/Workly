@@ -137,9 +137,10 @@ export default function ClientChatPage() {
         content,
         image_url: imageUrl,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error sending message:', error);
-      alert('Failed to send message. Please try again.');
+      const msg = error instanceof Error ? error.message : String(error);
+      alert(`Failed to send message: ${msg}`);
     }
   }, [user, thread]);
 
