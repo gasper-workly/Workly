@@ -181,6 +181,7 @@ export default function ProviderChatPage() {
       userRole="provider"
       userName={user.name}
       hideMobileNav
+      disableMainScroll
       backgroundClassName="bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800"
       mainBackgroundClassName="bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800"
       contentClassName="w-full px-0 py-0 min-h-full"

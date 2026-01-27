@@ -91,12 +91,35 @@ export default function ChatInterface({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [keyboardOffsetPx, setKeyboardOffsetPx] = useState(0);
 
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
+
+  // Keyboard handling (mobile): VisualViewport shrinks when keyboard opens.
+  // We use it to keep the input visible above the keyboard on iOS/Android WebView.
+  useEffect(() => {
+    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
+    if (!vv) return;
+
+    const update = () => {
+      // The amount of viewport "lost" to keyboard is roughly innerHeight - visualViewport.height - visualViewport.offsetTop
+      const raw = window.innerHeight - vv.height - vv.offsetTop;
+      const next = raw > 0 ? Math.round(raw) : 0;
+      setKeyboardOffsetPx(next);
+    };
+
+    update();
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+    };
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -459,7 +482,12 @@ export default function ChatInterface({
         </div>
 
         {/* Message Input */}
-        <form onSubmit={handleSubmit} className="mt-auto px-4 pb-5 pt-0 bg-transparent md:static md:p-5 safe-area-bottom safe-area-x">
+        <form
+          onSubmit={handleSubmit}
+          className="mt-auto px-4 pt-0 bg-transparent md:static md:p-5 safe-area-x"
+          // iOS/Android keyboard + iPhone home indicator.
+          style={{ paddingBottom: `calc(env(safe-area-inset-bottom) + 1.25rem + ${keyboardOffsetPx}px)` }}
+        >
           <div className="flex items-center gap-3 rounded-full border border-white/15 bg-white/10 px-4 py-2 backdrop-blur-md w-full shadow-[0_10px_25px_rgba(15,23,42,0.2)]">
             <button
               type="button"
@@ -493,7 +521,7 @@ export default function ChatInterface({
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type a message…"
-              className="flex-1 bg-transparent text-sm text-white placeholder:text-white/60 focus:outline-none"
+              className="flex-1 bg-transparent text-base text-white placeholder:text-white/60 focus:outline-none"
             />
             {attachedPreviewUrl && (
               <button

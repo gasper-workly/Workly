@@ -18,6 +18,7 @@ interface DashboardLayoutProps {
   userRole: 'client' | 'provider';
   userName: string;
   hideMobileNav?: boolean;
+  disableMainScroll?: boolean;
   backgroundClassName?: string;
   mainBackgroundClassName?: string;
   contentClassName?: string;
@@ -30,6 +31,7 @@ export default function DashboardLayout({
   userRole,
   userName,
   hideMobileNav = false,
+  disableMainScroll = false,
   backgroundClassName = 'bg-gray-50',
   mainBackgroundClassName = 'bg-gray-50',
   contentClassName = 'max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 min-h-full',
@@ -123,7 +125,9 @@ export default function DashboardLayout({
 
       {/* Main Content */}
       <main
-        className={`workly-scroll-root flex-1 md:pl-56 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0 overflow-y-auto overscroll-contain ios-scroll ${mainBackgroundClassName}`}
+        className={`workly-scroll-root flex-1 md:pl-56 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0 ${
+          disableMainScroll ? 'overflow-hidden' : 'overflow-y-auto'
+        } overscroll-contain ios-scroll ${mainBackgroundClassName}`}
       >
         <div className={contentClassName}>{children}</div>
       </main>
