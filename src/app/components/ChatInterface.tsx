@@ -92,6 +92,7 @@ export default function ChatInterface({
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [keyboardOffsetPx, setKeyboardOffsetPx] = useState(0);
+  const [inputFocused, setInputFocused] = useState(false);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -106,10 +107,19 @@ export default function ChatInterface({
     if (!vv) return;
 
     const update = () => {
-      // The amount of viewport "lost" to keyboard is roughly innerHeight - visualViewport.height - visualViewport.offsetTop
+      // Only apply keyboard offset while the message input is focused.
+      // This avoids pushing the whole layout up when the keyboard isn't actually being used.
+      if (!inputFocused) {
+        setKeyboardOffsetPx(0);
+        return;
+      }
+
+      // Approximate keyboard height using VisualViewport (works in iOS Safari/WebView and many Android WebViews).
       const raw = window.innerHeight - vv.height - vv.offsetTop;
       const next = raw > 0 ? Math.round(raw) : 0;
-      setKeyboardOffsetPx(next);
+
+      // Ignore tiny diffs (address bar / viewport chrome) so we don't jitter.
+      setKeyboardOffsetPx(next >= 80 ? next : 0);
     };
 
     update();
@@ -119,7 +129,7 @@ export default function ChatInterface({
       vv.removeEventListener('resize', update);
       vv.removeEventListener('scroll', update);
     };
-  }, []);
+  }, [inputFocused]);
 
   useEffect(() => {
     return () => {
@@ -520,6 +530,8 @@ export default function ChatInterface({
               type="text"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
+              onFocus={() => setInputFocused(true)}
+              onBlur={() => setInputFocused(false)}
               placeholder="Type a message…"
               className="flex-1 bg-transparent text-base text-white placeholder:text-white/60 focus:outline-none"
             />
