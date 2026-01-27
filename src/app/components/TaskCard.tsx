@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { 
   ChatBubbleLeftIcon,
   EllipsisHorizontalIcon,
@@ -109,6 +109,39 @@ export default function TaskCard({
   const [isDescriptionVisible, setIsDescriptionVisible] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+
+  // iOS Safari/WebView often scrolls the page behind fixed overlays unless we lock body scroll.
+  useEffect(() => {
+    if (!isModalOpen) return;
+    if (typeof document === 'undefined') return;
+
+    const body = document.body;
+    const html = document.documentElement;
+
+    const prevBodyOverflow = body.style.overflow;
+    const prevBodyPosition = body.style.position;
+    const prevBodyTop = body.style.top;
+    const prevBodyWidth = body.style.width;
+    const prevHtmlOverflow = html.style.overflow;
+
+    const scrollY = window.scrollY || 0;
+
+    body.style.overflow = 'hidden';
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.width = '100%';
+    html.style.overflow = 'hidden';
+
+    return () => {
+      body.style.overflow = prevBodyOverflow;
+      body.style.position = prevBodyPosition;
+      body.style.top = prevBodyTop;
+      body.style.width = prevBodyWidth;
+      html.style.overflow = prevHtmlOverflow;
+
+      window.scrollTo(0, scrollY);
+    };
+  }, [isModalOpen]);
 
   const {
     id,
@@ -385,12 +418,13 @@ export default function TaskCard({
 
       {/* Modal overlay for provider */}
       {currentUserRole === 'provider' && isModalOpen && (
-        <div className="fixed inset-0 z-[10050]">
+        <div className="fixed inset-0 z-[10050] overscroll-contain">
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-100 transition-opacity duration-200"
             onClick={() => setIsModalOpen(false)}
+            onTouchMove={(e) => e.preventDefault()}
           />
-          <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-4">
             <div
               role="dialog"
               aria-modal="true"
@@ -400,11 +434,11 @@ export default function TaskCard({
                 type="button"
                 aria-label="Close"
                 onClick={() => setIsModalOpen(false)}
-                className="absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100"
+                className="absolute top-3 right-3 z-10 p-2 rounded-full hover:bg-gray-100"
               >
                 <XMarkIcon className="h-5 w-5 text-gray-500" />
               </button>
-              <div className="p-4 sm:p-6 pb-6 max-h-[85vh] overflow-y-auto">
+              <div className="p-4 sm:p-6 pb-6 h-[85vh] overflow-y-auto ios-scroll overscroll-contain">
                 <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
                 <p className="mt-1 text-violet-600 font-semibold text-lg">{formatPriceEur(price, isNegotiable)}</p>
                 <div className="mt-3">

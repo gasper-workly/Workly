@@ -208,6 +208,11 @@ export default function ChatInterface({
   return (
     <div className="w-full">
       <div className="w-full rounded-none md:rounded-[32px] bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800 text-white flex flex-col min-h-[calc(100svh-4rem)] overflow-hidden">
+        {/* iOS notch/status-bar area background (prevents gray strip at top) */}
+        <div
+          className="fixed top-0 left-0 right-0 z-[10000] pointer-events-none bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800"
+          style={{ height: 'env(safe-area-inset-top)' }}
+        />
         {/* Header */}
         <div className="p-6 pb-4 border-b border-white/25">
           <div className="flex items-start gap-3">

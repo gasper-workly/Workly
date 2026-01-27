@@ -187,6 +187,7 @@ export default function TaskDetailModal({
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-100 transition-opacity duration-200"
         onClick={onClose}
+        onTouchMove={(e) => e.preventDefault()}
       />
       <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-4">
         <div
@@ -202,7 +203,7 @@ export default function TaskDetailModal({
           >
             <XMarkIcon className="h-5 w-5 text-gray-500" />
           </button>
-          <div className="p-4 sm:p-5 pb-6 max-h-[85vh] overflow-y-auto ios-scroll overscroll-contain">
+          <div className="p-4 sm:p-5 pb-6 h-[85vh] overflow-y-auto ios-scroll overscroll-contain">
             <h3 className="text-xl font-semibold text-black">{title}</h3>
             <p className="mt-1 text-violet-700 font-semibold">{formatPriceEur(price)}</p>
             <div className="mt-2 text-sm text-black">
