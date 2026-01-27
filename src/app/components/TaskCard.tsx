@@ -115,6 +115,8 @@ export default function TaskCard({
     if (!isModalOpen) return;
     if (typeof document === 'undefined') return;
 
+    document.documentElement.classList.add('modal-open');
+
     const body = document.body;
     const html = document.documentElement;
 
@@ -133,6 +135,8 @@ export default function TaskCard({
     html.style.overflow = 'hidden';
 
     return () => {
+      document.documentElement.classList.remove('modal-open');
+
       body.style.overflow = prevBodyOverflow;
       body.style.position = prevBodyPosition;
       body.style.top = prevBodyTop;

@@ -123,6 +123,8 @@ export default function TaskDetailModal({
     if (!isOpen) return;
     if (typeof document === 'undefined') return;
 
+    document.documentElement.classList.add('modal-open');
+
     const body = document.body;
     const html = document.documentElement;
 
@@ -141,6 +143,8 @@ export default function TaskDetailModal({
     html.style.overflow = 'hidden';
 
     return () => {
+      document.documentElement.classList.remove('modal-open');
+
       body.style.overflow = prevBodyOverflow;
       body.style.position = prevBodyPosition;
       body.style.top = prevBodyTop;

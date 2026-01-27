@@ -123,7 +123,7 @@ export default function DashboardLayout({
 
       {/* Main Content */}
       <main
-        className={`flex-1 md:pl-56 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0 overflow-y-auto overscroll-contain ios-scroll ${mainBackgroundClassName}`}
+        className={`workly-scroll-root flex-1 md:pl-56 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0 overflow-y-auto overscroll-contain ios-scroll ${mainBackgroundClassName}`}
       >
         <div className={contentClassName}>{children}</div>
       </main>

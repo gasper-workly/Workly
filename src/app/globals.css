@@ -52,6 +52,11 @@ body {
   padding-right: var(--safe-area-right, env(safe-area-inset-right));
 }
 
+/* When a modal is open, prevent the dashboard scroll container from scrolling behind it (iOS WebView). */
+.modal-open .workly-scroll-root {
+  overflow: hidden !important;
+}
+
 /* Dynamic viewport units: avoid relying on 100vh alone */
 @supports (height: 100svh) {
   .min-h-screen {
