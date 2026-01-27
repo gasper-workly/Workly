@@ -5,7 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardLayout from '@/app/components/DashboardLayout';
 import UserAvatar from '@/app/components/UserAvatar';
 import { useAuth } from '@/app/hooks/useAuth';
-import { getProviderReviews, getProviderStats, ReviewWithDetails } from '@/app/lib/reviews';
+import {
+  getProviderReviews,
+  getProviderStats,
+  getUnreadReviewsCount,
+  markReviewsSeen,
+  ReviewWithDetails,
+} from '@/app/lib/reviews';
 import { getProviderTotalEarningsEur } from '@/app/lib/orders';
 import { logout, updateProfile } from '@/app/lib/auth';
 import { uploadAvatarAndGetPublicUrl } from '@/app/lib/avatars';
@@ -38,6 +44,8 @@ function ProviderProfilePageContent() {
   const [avgRating, setAvgRating] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [totalEarnings, setTotalEarnings] = useState<number>(0);
+  const [unreadReviewsCount, setUnreadReviewsCount] = useState<number>(0);
+  const reviewsSectionRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -84,6 +92,10 @@ function ProviderProfilePageContent() {
         // Fetch reviews
         const providerReviews = await getProviderReviews(user.id);
         setReviews(providerReviews);
+
+        // Unread reviews badge count (simple notification)
+        const unread = await getUnreadReviewsCount(user.id);
+        setUnreadReviewsCount(unread);
         
         // Fetch stats for average rating
         const stats = await getProviderStats(user.id);
@@ -103,6 +115,32 @@ function ProviderProfilePageContent() {
     load();
     }
   }, [user]);
+
+  // Reset unread reviews when the Reviews section becomes visible
+  useEffect(() => {
+    if (!user?.id) return;
+    if (unreadReviewsCount <= 0) return;
+    const el = reviewsSectionRef.current;
+    if (!el) return;
+
+    if (typeof IntersectionObserver === 'undefined') return;
+
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry?.isIntersecting) {
+          // Fire and forget; local UI updates immediately
+          void markReviewsSeen(user.id);
+          setUnreadReviewsCount(0);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [user?.id, unreadReviewsCount]);
 
   const sortedReviews = [...reviews].sort((a, b) => {
     if (sortMode === 'newest') {
@@ -633,9 +671,19 @@ function ProviderProfilePageContent() {
         </div>
 
         {/* Reviews Section */}
-        <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] overflow-hidden">
+        <div
+          ref={reviewsSectionRef}
+          className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] overflow-hidden"
+        >
           <div className="px-6 py-4 border-b border-gray-300 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-black">{t('providerProfilePage.reviews.title')}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-black">{t('providerProfilePage.reviews.title')}</h2>
+              {unreadReviewsCount > 0 && (
+                <span className="inline-flex items-center justify-center min-w-6 h-6 px-2 bg-violet-600 text-white text-xs font-bold rounded-full">
+                  {unreadReviewsCount > 9 ? '+9' : String(unreadReviewsCount)}
+                </span>
+              )}
+            </div>
             <div className="text-sm">
               <label className="mr-2 text-black">{t('providerProfilePage.reviews.sortLabel')}</label>
               <select

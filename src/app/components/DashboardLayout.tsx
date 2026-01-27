@@ -11,6 +11,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/app/hooks/useAuth';
 import { getUnreadCount } from '@/app/lib/chat';
+import { getUnreadReviewsCount } from '@/app/lib/reviews';
 import { useTranslation } from '@/app/hooks/useTranslation';
 
 interface DashboardLayoutProps {
@@ -42,6 +43,7 @@ export default function DashboardLayout({
   const { user } = useAuth();
   const { t } = useTranslation();
   const [fetchedUnreadCount, setFetchedUnreadCount] = useState<number>(0);
+  const [fetchedUnreadReviewsCount, setFetchedUnreadReviewsCount] = useState<number>(0);
 
   // If the page doesn't supply a count, fetch it so the badge is accurate across all dashboard pages.
   useEffect(() => {
@@ -62,12 +64,35 @@ export default function DashboardLayout({
     };
   }, [user?.id, unreadMessagesCount]);
 
+  // Provider-only: unread reviews count (badge on Profile tab)
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      if (!user?.id) return;
+      if (userRole !== 'provider') return;
+      try {
+        const c = await getUnreadReviewsCount(user.id);
+        if (!cancelled) setFetchedUnreadReviewsCount(c);
+      } catch {
+        // ignore
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, userRole]);
+
   const effectiveUnreadCount =
     typeof unreadMessagesCount === 'number'
       ? unreadMessagesCount
       : fetchedUnreadCount || (hasUnreadMessages ? 1 : 0);
 
   const badgeText = effectiveUnreadCount > 9 ? '+9' : String(effectiveUnreadCount);
+
+  const effectiveUnreadReviewsCount = userRole === 'provider' ? fetchedUnreadReviewsCount : 0;
+  const reviewsBadgeText =
+    effectiveUnreadReviewsCount > 9 ? '+9' : String(effectiveUnreadReviewsCount);
 
   const navigation = {
     client: [
@@ -95,7 +120,19 @@ export default function DashboardLayout({
             <div className="flex-1 space-y-1 px-3">
               {currentNavItems.map((item) => {
                 const isActive = pathname === item.href;
-                const showNotification = item.key === 'nav.messages' && effectiveUnreadCount > 0 && !isActive;
+                const showMessagesNotification =
+                  item.key === 'nav.messages' && effectiveUnreadCount > 0 && !isActive;
+                const showReviewsNotification =
+                  userRole === 'provider' &&
+                  item.key === 'nav.profile' &&
+                  effectiveUnreadReviewsCount > 0 &&
+                  !isActive;
+                const showNotification = showMessagesNotification || showReviewsNotification;
+                const notificationText = showMessagesNotification
+                  ? badgeText
+                  : showReviewsNotification
+                    ? reviewsBadgeText
+                    : '';
                 return (
                   <Link
                     key={item.href}
@@ -110,7 +147,7 @@ export default function DashboardLayout({
                       <item.icon className="h-5 w-5" />
                       {showNotification && (
                         <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-4 h-4 px-1 bg-violet-600 text-white text-[10px] font-bold rounded-full">
-                          {badgeText}
+                          {notificationText}
                         </span>
                       )}
                     </div>
@@ -151,7 +188,19 @@ export default function DashboardLayout({
           <div className="flex justify-around py-2 px-2">
             {currentNavItems.map((item) => {
               const isActive = pathname === item.href;
-              const showNotification = item.key === 'nav.messages' && effectiveUnreadCount > 0 && !isActive;
+              const showMessagesNotification =
+                item.key === 'nav.messages' && effectiveUnreadCount > 0 && !isActive;
+              const showReviewsNotification =
+                userRole === 'provider' &&
+                item.key === 'nav.profile' &&
+                effectiveUnreadReviewsCount > 0 &&
+                !isActive;
+              const showNotification = showMessagesNotification || showReviewsNotification;
+              const notificationText = showMessagesNotification
+                ? badgeText
+                : showReviewsNotification
+                  ? reviewsBadgeText
+                  : '';
               return (
                 <Link
                   key={item.href}
@@ -167,7 +216,7 @@ export default function DashboardLayout({
                     <item.icon className={`h-7 w-7 ${isActive ? 'fill-violet-100' : ''}`} />
                     {showNotification && (
                       <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-4 h-4 px-1 bg-violet-600 text-white text-[10px] font-bold rounded-full">
-                        {badgeText}
+                        {notificationText}
                       </span>
                     )}
                   </div>

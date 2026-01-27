@@ -9,6 +9,54 @@ export interface ReviewWithDetails extends Review {
   provider?: Profile;
 }
 
+// Unread review count for provider (based on profiles.last_seen_reviews_at)
+export async function getUnreadReviewsCount(providerId: string): Promise<number> {
+  const supabase = createClient();
+
+  // Fetch last seen timestamp
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('last_seen_reviews_at')
+    .eq('id', providerId)
+    .single();
+
+  if (profileError) {
+    console.error('Error fetching last_seen_reviews_at:', profileError);
+    return 0;
+  }
+
+  const lastSeen = (profile as { last_seen_reviews_at?: string | null })?.last_seen_reviews_at ?? null;
+  if (!lastSeen) return 0;
+
+  const { count, error } = await supabase
+    .from('reviews')
+    .select('*', { count: 'exact', head: true })
+    .eq('provider_id', providerId)
+    .gt('created_at', lastSeen);
+
+  if (error) {
+    console.error('Error fetching unread reviews count:', error);
+    return 0;
+  }
+
+  return count || 0;
+}
+
+// Mark reviews as seen for provider (updates profiles.last_seen_reviews_at)
+export async function markReviewsSeen(providerId: string): Promise<void> {
+  const supabase = createClient();
+  const nowIso = new Date().toISOString();
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ last_seen_reviews_at: nowIso })
+    .eq('id', providerId);
+
+  if (error) {
+    console.error('Error marking reviews seen:', error);
+  }
+}
+
 // Create a new review
 export async function createReview(input: {
   job_id: string;

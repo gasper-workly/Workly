@@ -21,6 +21,7 @@ export interface Profile {
   completed_requests: number;
   is_verified: boolean;
   is_suspended: boolean;
+  last_seen_reviews_at?: string | null;
   created_at: string;
   updated_at: string;
 }
