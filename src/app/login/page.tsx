@@ -65,6 +65,11 @@ function LoginContent() {
   if (booting) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8">
+        {/* iOS notch / status-bar area background */}
+        <div
+          className="fixed top-0 left-0 right-0 bg-gray-50 pointer-events-none"
+          style={{ height: 'env(safe-area-inset-top)' }}
+        />
         <img src="/workly-logo.png" alt="Workly" className="h-32 w-auto mb-4" />
         <p className="text-gray-600">{t('common.loading')}</p>
       </div>
@@ -92,6 +97,11 @@ function LoginContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      {/* iOS notch / status-bar area background */}
+      <div
+        className="fixed top-0 left-0 right-0 bg-gray-50 pointer-events-none"
+        style={{ height: 'env(safe-area-inset-top)' }}
+      />
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h1 className="mt-6 text-3xl font-bold tracking-tight text-black text-center">
           {t('auth.login.title')}
@@ -150,6 +160,11 @@ export default function LoginPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        {/* iOS notch / status-bar area background */}
+        <div
+          className="fixed top-0 left-0 right-0 bg-gray-50 pointer-events-none"
+          style={{ height: 'env(safe-area-inset-top)' }}
+        />
         <p className="text-gray-500">{t('common.loading')}</p>
       </div>
     }>

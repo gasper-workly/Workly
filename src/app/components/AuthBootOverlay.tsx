@@ -125,6 +125,11 @@ export default function AuthBootOverlay() {
   // Full-screen overlay to avoid flashing the login form on cold start
   return (
     <div className="fixed inset-0 z-[10001] flex flex-col items-center justify-center bg-violet-600">
+      {/* iOS notch / status-bar area background */}
+      <div
+        className="fixed top-0 left-0 right-0 bg-violet-600 pointer-events-none"
+        style={{ height: 'env(safe-area-inset-top)' }}
+      />
       <img src="/workly-logo.png" alt="Workly" className="h-28 w-auto drop-shadow" />
       <div className="mt-5 h-6 w-6 animate-spin rounded-full border-2 border-white/40 border-t-white" />
     </div>
