@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/app/lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,8 +14,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Rating must be between 1 and 5' }, { status: 400 });
     }
 
-    const supabase = await createClient();
-    const { data: authData, error: authErr } = await supabase.auth.getUser();
+    // Try to get user from cookies first (web), then from Authorization header (Capacitor)
+    let supabase = await createClient();
+    let { data: authData, error: authErr } = await supabase.auth.getUser();
+    
+    // If cookie auth failed, try Authorization header (for Capacitor apps)
+    if (authErr || !authData?.user) {
+      const authHeader = req.headers.get('Authorization');
+      if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        // Create a client with the user's token
+        const supabaseWithToken = createServiceClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          {
+            global: {
+              headers: { Authorization: `Bearer ${token}` }
+            }
+          }
+        );
+        const tokenAuthResult = await supabaseWithToken.auth.getUser(token);
+        if (tokenAuthResult.data?.user) {
+          authData = tokenAuthResult.data;
+          authErr = null;
+          supabase = supabaseWithToken;
+        }
+      }
+    }
+    
     if (authErr || !authData?.user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }

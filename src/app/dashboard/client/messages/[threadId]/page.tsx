@@ -16,7 +16,7 @@ import {
   type ChatThreadWithDetails
 } from '@/app/lib/chat';
 import { getJobById, type JobWithUsers } from '@/app/lib/jobs';
-import { createReview } from '@/app/lib/reviews';
+import { createClient } from '@/app/lib/supabase/client';
 import { Order, getOrdersForThread, markOrderPaid, completeOrder } from '@/app/lib/orders';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { StarIcon as StarIconOutline } from '@heroicons/react/24/outline';
@@ -149,10 +149,20 @@ export default function ClientChatPage() {
     if (!user || !thread || !job) return;
 
     try {
+      // Get access token for Authorization header (needed for Capacitor)
+      const supabase = createClient();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
       // Submit review via API (which will mark job as complete)
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+
       const response = await fetch('/api/reviews', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           jobId: job.id,
           clientId: user.id,
