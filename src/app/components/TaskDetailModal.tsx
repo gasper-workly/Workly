@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { 
   MapPinIcon, 
   ChatBubbleLeftIcon, 
@@ -117,6 +117,42 @@ export default function TaskDetailModal({
   const { t } = useTranslation();
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
+  // iOS Safari/WebView can "scroll-through" fixed overlays unless we lock body scroll.
+  // This also helps taps land on the modal controls (e.g., the close X) instead of the page behind.
+  useEffect(() => {
+    if (!isOpen) return;
+    if (typeof document === 'undefined') return;
+
+    const body = document.body;
+    const html = document.documentElement;
+
+    const prevBodyOverflow = body.style.overflow;
+    const prevBodyPosition = body.style.position;
+    const prevBodyTop = body.style.top;
+    const prevBodyWidth = body.style.width;
+    const prevHtmlOverflow = html.style.overflow;
+
+    const scrollY = window.scrollY || 0;
+
+    body.style.overflow = 'hidden';
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.width = '100%';
+    html.style.overflow = 'hidden';
+
+    return () => {
+      body.style.overflow = prevBodyOverflow;
+      body.style.position = prevBodyPosition;
+      body.style.top = prevBodyTop;
+      body.style.width = prevBodyWidth;
+      html.style.overflow = prevHtmlOverflow;
+
+      // Restore scroll position
+      const y = Math.abs(parseInt(body.style.top || '0', 10)) || scrollY;
+      window.scrollTo(0, y);
+    };
+  }, [isOpen]);
+
   if (!isOpen) {
     return null;
   }
@@ -147,12 +183,12 @@ export default function TaskDetailModal({
   const translatedCategoryLabel = t(CATEGORY_LABEL_TO_KEY[categoryLabel] || 'common.other');
 
   return (
-    <div className="fixed inset-0 z-[10050]">
+    <div className="fixed inset-0 z-[10050] overscroll-contain">
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-100 transition-opacity duration-200"
         onClick={onClose}
       />
-      <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-4">
         <div
           role="dialog"
           aria-modal="true"
@@ -162,11 +198,11 @@ export default function TaskDetailModal({
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100"
+            className="absolute top-3 right-3 z-10 p-2 rounded-full hover:bg-gray-100"
           >
             <XMarkIcon className="h-5 w-5 text-gray-500" />
           </button>
-          <div className="p-4 sm:p-5 pb-6 max-h-[85vh] overflow-y-auto">
+          <div className="p-4 sm:p-5 pb-6 max-h-[85vh] overflow-y-auto ios-scroll overscroll-contain">
             <h3 className="text-xl font-semibold text-black">{title}</h3>
             <p className="mt-1 text-violet-700 font-semibold">{formatPriceEur(price)}</p>
             <div className="mt-2 text-sm text-black">
