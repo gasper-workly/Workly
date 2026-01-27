@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/app/components/DashboardLayout';
 import TaskCard from '@/app/components/TaskCard';
-import { createChatThread, getUnreadCount } from '@/app/lib/chat';
+import { createChatThread, getUnreadCount, subscribeToUnreadMessagesForUser } from '@/app/lib/chat';
 import { getAllJobs, getProviderJobs, JobWithUsers } from '@/app/lib/jobs';
 import { getProviderStats } from '@/app/lib/reviews';
 import { getProviderTotalEarningsEur } from '@/app/lib/orders';
@@ -151,6 +151,37 @@ export default function ProviderDashboard() {
       document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [user]);
+
+  // Real-time: update dashboard unread messages stat immediately when a new message arrives.
+  useEffect(() => {
+    if (!user?.id) return;
+    let disposed = false;
+    let unsubscribe: (() => void) | null = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const trigger = () => {
+      if (disposed) return;
+      if (timer) return;
+      timer = setTimeout(async () => {
+        timer = null;
+        await refreshUnreadCount();
+      }, 250);
+    };
+
+    (async () => {
+      try {
+        unsubscribe = await subscribeToUnreadMessagesForUser(user.id, trigger);
+      } catch {
+        // ignore
+      }
+    })();
+
+    return () => {
+      disposed = true;
+      if (timer) clearTimeout(timer);
+      if (unsubscribe) unsubscribe();
+    };
+  }, [user?.id]);
 
   // Fetch jobs and stats
   useEffect(() => {

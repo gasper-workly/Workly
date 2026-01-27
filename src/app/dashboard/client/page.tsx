@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import DashboardLayout from '@/app/components/DashboardLayout';
 import TaskCard from '@/app/components/TaskCard';
-import { getUnreadCount } from '@/app/lib/chat';
+import { getUnreadCount, subscribeToUnreadMessagesForUser } from '@/app/lib/chat';
 import { getClientJobs, JobWithUsers, setJobStatus } from '@/app/lib/jobs';
 import { getClientReviews } from '@/app/lib/reviews';
 import { useAuth } from '@/app/hooks/useAuth';
@@ -79,6 +79,37 @@ export default function ClientDashboard() {
       document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [user]);
+
+  // Real-time: update dashboard unread messages stat immediately when a new message arrives.
+  useEffect(() => {
+    if (!user?.id) return;
+    let disposed = false;
+    let unsubscribe: (() => void) | null = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const trigger = () => {
+      if (disposed) return;
+      if (timer) return;
+      timer = setTimeout(async () => {
+        timer = null;
+        await refreshUnreadCount();
+      }, 250);
+    };
+
+    (async () => {
+      try {
+        unsubscribe = await subscribeToUnreadMessagesForUser(user.id, trigger);
+      } catch {
+        // ignore
+      }
+    })();
+
+    return () => {
+      disposed = true;
+      if (timer) clearTimeout(timer);
+      if (unsubscribe) unsubscribe();
+    };
+  }, [user?.id]);
 
   // Fetch jobs and stats when user is loaded
   useEffect(() => {

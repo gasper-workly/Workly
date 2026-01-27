@@ -376,6 +376,69 @@ export function subscribeToChatThreads(
   };
 }
 
+// Subscribe to any new messages relevant to a user (across all their threads).
+// Calls `onRelevantMessage` when a message arrives for one of the user's threads
+// and the sender is not the user.
+export async function subscribeToUnreadMessagesForUser(
+  userId: string,
+  onRelevantMessage: () => void
+): Promise<() => void> {
+  const supabase = createClient();
+
+  let cancelled = false;
+  let jobIdSet = new Set<string>();
+
+  const loadJobIds = async () => {
+    const { data: threads } = await supabase
+      .from('chat_threads')
+      .select('job_id')
+      .or(`client_id.eq.${userId},provider_id.eq.${userId}`);
+
+    jobIdSet = new Set((threads || []).map((t: { job_id: string }) => t.job_id));
+  };
+
+  await loadJobIds();
+
+  const channel = supabase
+    .channel(`unread-messages:${userId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+      },
+      async (payload: { new: Record<string, unknown> }) => {
+        if (cancelled) return;
+        const msg = payload.new as unknown as { job_id?: string; sender_id?: string };
+        const jobId = msg.job_id;
+        const senderId = msg.sender_id;
+
+        if (!jobId || !senderId) return;
+        if (senderId === userId) return;
+
+        // If we don't recognize this job yet (new thread), refresh job list once.
+        if (!jobIdSet.has(jobId)) {
+          try {
+            await loadJobIds();
+          } catch {
+            // ignore
+          }
+        }
+
+        if (jobIdSet.has(jobId)) {
+          onRelevantMessage();
+        }
+      }
+    )
+    .subscribe();
+
+  return () => {
+    cancelled = true;
+    supabase.removeChannel(channel);
+  };
+}
+
 // Legacy compatibility functions
 export function markHasUnreadMessages(): void {
   if (typeof window !== 'undefined') {

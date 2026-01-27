@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/app/hooks/useAuth';
-import { getUnreadCount } from '@/app/lib/chat';
+import { getUnreadCount, subscribeToUnreadMessagesForUser } from '@/app/lib/chat';
 import { getUnreadReviewsCount } from '@/app/lib/reviews';
 import { useTranslation } from '@/app/hooks/useTranslation';
 
@@ -61,6 +61,44 @@ export default function DashboardLayout({
     load();
     return () => {
       cancelled = true;
+    };
+  }, [user?.id, unreadMessagesCount]);
+
+  // Real-time: refresh unread messages badge when a new relevant message arrives.
+  useEffect(() => {
+    if (typeof unreadMessagesCount === 'number') return; // page supplies its own count
+    if (!user?.id) return;
+
+    let disposed = false;
+    let unsubscribe: (() => void) | null = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const refresh = () => {
+      if (disposed) return;
+      if (timer) return; // debounce bursty inserts
+      timer = setTimeout(async () => {
+        timer = null;
+        try {
+          const c = await getUnreadCount(user.id);
+          if (!disposed) setFetchedUnreadCount(c);
+        } catch {
+          // ignore
+        }
+      }, 250);
+    };
+
+    (async () => {
+      try {
+        unsubscribe = await subscribeToUnreadMessagesForUser(user.id, refresh);
+      } catch {
+        // ignore
+      }
+    })();
+
+    return () => {
+      disposed = true;
+      if (timer) clearTimeout(timer);
+      if (unsubscribe) unsubscribe();
     };
   }, [user?.id, unreadMessagesCount]);
 
