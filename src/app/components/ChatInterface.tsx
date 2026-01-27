@@ -96,6 +96,18 @@ export default function ChatInterface({
   const inputBarRef = useRef<HTMLDivElement>(null);
   const [inputBarHeightPx, setInputBarHeightPx] = useState(0);
 
+  // Set body background to purple gradient so iOS safe areas match
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const body = document.body;
+    const prevBg = body.style.background;
+    // This gradient should match DashboardLayout's chat background
+    body.style.background = 'linear-gradient(to bottom, #7c3aed, #6d28d9, #4338ca)';
+    return () => {
+      body.style.background = prevBg;
+    };
+  }, []);
+
   // Prevent the page itself from scrolling while in chat (we only want the messages list to scroll).
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -279,11 +291,8 @@ export default function ChatInterface({
     otherUserId;
 
   return (
-    <div className="w-full h-full relative">
-      {/* Ensure iOS safe-area (status bar + home indicator) matches the chat gradient */}
-      <div className="fixed inset-0 z-0 bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800 pointer-events-none" />
-
-      <div className="relative z-10 w-full h-full rounded-none md:rounded-[32px] bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800 text-white flex flex-col overflow-hidden">
+    <div className="w-full h-full">
+      <div className="w-full h-full rounded-none md:rounded-[32px] bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800 text-white flex flex-col overflow-hidden">
         {/* Header */}
         <div className="p-6 pb-4 border-b border-white/25">
           <div className="flex items-start gap-3">

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #f9fafb; /* gray-50 - matches iOS WebView bg */
   --foreground: #171717;
 }
 
@@ -12,10 +12,11 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Disable dark mode for now - app uses its own theming */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #f9fafb; /* keep light */
+    --foreground: #171717;
   }
 }
 
