@@ -307,6 +307,7 @@ export type TranslationKey =
   | 'location.approxAreaSuffix'
   | 'location.approximateLabel'
   | 'task.viewMore'
+  | 'task.priceTbd'
   | 'common.loading';
 
 export const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
@@ -642,6 +643,7 @@ export const translations: Record<LanguageCode, Record<TranslationKey, string>> 
     'location.approximateLabel': 'Approximate location (~1km radius)',
 
     'task.viewMore': 'View more',
+    'task.priceTbd': 'Price TBD',
 
     'common.loading': 'Loading…',
   },
@@ -976,6 +978,7 @@ export const translations: Record<LanguageCode, Record<TranslationKey, string>> 
     'location.approximateLabel': 'Približna lokacija (~1 km radius)',
 
     'task.viewMore': 'Poglej več',
+    'task.priceTbd': 'Cena ni določena',
 
     'common.loading': 'Nalaganje…',
   },

@@ -365,7 +365,8 @@ export default function ClientChatPage() {
                 ? { lat: job.latitude, lng: job.longitude }
                 : undefined,
             date: job.due_date || job.created_at,
-            price: job.budget_max || job.budget_min || 0,
+            price: job.budget_max ?? job.budget_min ?? null,
+            isNegotiable: job.is_negotiable,
             status: job.status === 'completed' ? 'completed' : 'open',
             images: job.images || [],
             providerName: providerName,

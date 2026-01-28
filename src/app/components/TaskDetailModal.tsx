@@ -48,7 +48,8 @@ export interface TaskDetail {
     lng: number;
   };
   date: string;
-  price: number;
+  price: number | null;
+  isNegotiable?: boolean;
   status?: string;
   clientName?: string;
   clientId?: string;
@@ -70,8 +71,6 @@ interface TaskDetailModalProps {
   onChatClick?: () => void;
   chatButtonLabel?: string;
 }
-
-const formatPriceEur = (amount: number | undefined) => `${(amount ?? 0).toFixed(2)}€`;
 
 const getCategoryIcon = (categoryLabel: string) => {
   return CATEGORY_ICONS[categoryLabel] || ListBulletIcon;
@@ -164,6 +163,7 @@ export default function TaskDetailModal({
   const {
     title,
     price,
+    isNegotiable,
     category,
     description,
     imageUrl,
@@ -185,6 +185,12 @@ export default function TaskDetailModal({
   const locationLabel = location || `${city} ${postalCode}`.trim();
   const categoryLabel = getCategoryGroupLabel(category, title);
   const translatedCategoryLabel = t(CATEGORY_LABEL_TO_KEY[categoryLabel] || 'common.other');
+
+  const formatPriceEur = (amount: number | null | undefined, negotiable?: boolean) => {
+    if (negotiable) return t('form.request.negotiableLabel');
+    if (amount === null || amount === undefined) return t('task.priceTbd');
+    return `${amount.toFixed(2)}€`;
+  };
 
   return (
     <div className="fixed inset-0 z-[10050] overscroll-contain">
@@ -209,7 +215,7 @@ export default function TaskDetailModal({
           </button>
           <div className="p-4 sm:p-5 pb-6 h-[85vh] overflow-y-auto ios-scroll overscroll-contain">
             <h3 className="text-xl font-semibold text-black">{title}</h3>
-            <p className="mt-1 text-violet-700 font-semibold">{formatPriceEur(price)}</p>
+            <p className="mt-1 text-violet-700 font-semibold">{formatPriceEur(price, isNegotiable)}</p>
             <div className="mt-2 text-sm text-black">
               {(() => {
                 const CategoryIcon = getCategoryIcon(categoryLabel);

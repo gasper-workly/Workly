@@ -191,8 +191,8 @@ export default function TaskCard({
   };
 
   const formatPriceEur = (amount: number | null | undefined, negotiable?: boolean) => {
-    if (negotiable) return 'Negotiable';
-    if (amount === null || amount === undefined) return 'Price TBD';
+    if (negotiable) return t('form.request.negotiableLabel');
+    if (amount === null || amount === undefined) return t('task.priceTbd');
     return `${Math.round(amount)} €`;
   };
 
