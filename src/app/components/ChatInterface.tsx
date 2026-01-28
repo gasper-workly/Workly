@@ -98,6 +98,7 @@ export default function ChatInterface({
   const inputBarRef = useRef<HTMLDivElement>(null);
   const [inputBarHeightPx, setInputBarHeightPx] = useState(0);
   const [showSafeAreaFade, setShowSafeAreaFade] = useState(false);
+  const safeAreaBlendColor = 'rgba(249, 250, 251, 1)'; // gray-50 (matches globals.css --background)
 
   // Set body background to purple gradient so iOS safe areas match
   useEffect(() => {
@@ -308,145 +309,159 @@ export default function ChatInterface({
       <div className="relative w-full h-full rounded-none md:rounded-[32px] bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800 text-white flex flex-col overflow-hidden">
         {showSafeAreaFade && (
           <>
-            <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-4 bg-gradient-to-b from-gray-50 to-transparent" />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-4 bg-gradient-to-t from-gray-50 to-transparent" />
+            {/* Fade under UI so it doesn't wash out icons/text */}
+            <div
+              className="pointer-events-none absolute inset-x-0 top-0 z-0"
+              style={{
+                height: 'calc(env(safe-area-inset-top) + 72px)',
+                background: `linear-gradient(to bottom, ${safeAreaBlendColor}, rgba(249, 250, 251, 0))`,
+              }}
+            />
+            <div
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-0"
+              style={{
+                height: `calc(env(safe-area-inset-bottom) + ${inputBarHeightPx}px + 12px)`,
+                background: `linear-gradient(to top, ${safeAreaBlendColor}, rgba(249, 250, 251, 0))`,
+              }}
+            />
           </>
         )}
-        {/* Header */}
-        <div className="p-6 pb-4 border-b border-white/25">
-          <div className="flex items-start gap-3">
-            {onBack && (
-              <button
-                type="button"
-                onClick={onBack}
-                className="mt-1 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur hover:bg-white/20 transition-colors"
-                aria-label="Go back"
-              >
-                <ArrowLeftIcon className="h-5 w-5" />
-              </button>
-            )}
-            <div className="flex-1">
-              <div className="flex items-center gap-3">
-                <div
-                  className={canOpenOtherProfile ? 'cursor-pointer' : undefined}
-                  onClick={
-                    canOpenOtherProfile
-                      ? () => router.push(`/providers/${otherUserId}`)
-                      : undefined
-                  }
-                >
-                  <UserAvatar
-                    imageUrl={otherUserImageUrl}
-                    name={otherUserName}
-                    role={otherUserRole}
-                    completedRequests={otherUserCompletedRequests}
-                    size="md"
-                  />
-                </div>
-                <div
-                  className={canOpenOtherProfile ? 'cursor-pointer' : undefined}
-                  onClick={
-                    canOpenOtherProfile
-                      ? () => router.push(`/providers/${otherUserId}`)
-                      : undefined
-                  }
-                >
-                  <p className={`text-base font-semibold ${canOpenOtherProfile ? 'hover:underline' : ''}`}>{otherUserName}</p>
-                  <p className="text-xs text-white/70">
-                    {otherUserRole === 'provider' ? 'Trusted provider' : 'Client'}
-                  </p>
-                </div>
-              </div>
-            </div>
-            {currentUserRole === 'client' && (
-              <div className="flex items-center gap-2">
+        <div className="relative z-10 flex h-full min-h-0 flex-col">
+          {/* Header */}
+          <div className="p-6 pb-4 border-b border-white/25">
+            <div className="flex items-start gap-3">
+              {onBack && (
                 <button
                   type="button"
-                  onClick={handleShareLocation}
-                  disabled={isSharingLocation}
-                  className={`inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 backdrop-blur transition-colors ${
-                    isSharingLocation 
-                      ? 'bg-white/5 opacity-70 cursor-wait' 
-                      : 'bg-white/10 hover:bg-white/20'
-                  }`}
-                  aria-label="Share my location"
+                  onClick={onBack}
+                  className="mt-1 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur hover:bg-white/20 transition-colors"
+                  aria-label="Go back"
                 >
-                  {isSharingLocation ? (
-                    <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <MapPinIcon className="h-5 w-5" />
-                  )}
+                  <ArrowLeftIcon className="h-5 w-5" />
                 </button>
-                {otherUserRole === 'provider' ? (
-                  otherUserPhone ? (
-                    <a
-                      href={`tel:${otherUserPhone}`}
-                      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur hover:bg-white/20 transition-colors"
-                      aria-label="Call provider"
-                    >
-                      <PhoneIcon className="h-5 w-5" />
-                    </a>
+              )}
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={canOpenOtherProfile ? 'cursor-pointer' : undefined}
+                    onClick={
+                      canOpenOtherProfile
+                        ? () => router.push(`/providers/${otherUserId}`)
+                        : undefined
+                    }
+                  >
+                    <UserAvatar
+                      imageUrl={otherUserImageUrl}
+                      name={otherUserName}
+                      role={otherUserRole}
+                      completedRequests={otherUserCompletedRequests}
+                      size="md"
+                    />
+                  </div>
+                  <div
+                    className={canOpenOtherProfile ? 'cursor-pointer' : undefined}
+                    onClick={
+                      canOpenOtherProfile
+                        ? () => router.push(`/providers/${otherUserId}`)
+                        : undefined
+                    }
+                  >
+                    <p className={`text-base font-semibold ${canOpenOtherProfile ? 'hover:underline' : ''}`}>{otherUserName}</p>
+                    <p className="text-xs text-white/70">
+                      {otherUserRole === 'provider' ? 'Trusted provider' : 'Client'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              {currentUserRole === 'client' && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleShareLocation}
+                    disabled={isSharingLocation}
+                    className={`inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 backdrop-blur transition-colors ${
+                      isSharingLocation 
+                        ? 'bg-white/5 opacity-70 cursor-wait' 
+                        : 'bg-white/10 hover:bg-white/20'
+                    }`}
+                    aria-label="Share my location"
+                  >
+                    {isSharingLocation ? (
+                      <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <MapPinIcon className="h-5 w-5" />
+                    )}
+                  </button>
+                  {otherUserRole === 'provider' ? (
+                    otherUserPhone ? (
+                      <a
+                        href={`tel:${otherUserPhone}`}
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur hover:bg-white/20 transition-colors"
+                        aria-label="Call provider"
+                      >
+                        <PhoneIcon className="h-5 w-5" />
+                      </a>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur opacity-50 cursor-not-allowed"
+                        aria-label="Provider phone number not available"
+                      >
+                        <PhoneIcon className="h-5 w-5" />
+                      </button>
+                    )
                   ) : (
                     <button
                       type="button"
-                      disabled
-                      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur opacity-50 cursor-not-allowed"
-                      aria-label="Provider phone number not available"
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur hover:bg-white/20 transition-colors"
+                      aria-label="Start audio call"
                     >
                       <PhoneIcon className="h-5 w-5" />
                     </button>
-                  )
-                ) : (
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="mt-4 rounded-3xl bg-white/10 border border-white/10 p-4">
+              <p className="text-sm font-semibold">{taskTitle}</p>
+              {taskDescription && (
+                <p className="text-xs text-white/80 mt-1">{taskDescription}</p>
+              )}
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {onTaskClick ? (
                   <button
                     type="button"
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur hover:bg-white/20 transition-colors"
-                    aria-label="Start audio call"
+                    onClick={onTaskClick}
+                    className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-white/30 hover:bg-white/10 transition-colors cursor-pointer"
                   >
-                    <PhoneIcon className="h-5 w-5" />
+                    {taskStatus === 'open' ? t('chat.openTask') : t('chat.completedTask')}
+                  </button>
+                ) : (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-white/30">
+                    {taskStatus === 'open' ? t('chat.openTask') : t('chat.completedTask')}
+                  </span>
+                )}
+                {taskStatus === 'open' && onMarkTaskCompleted && (
+                  <button
+                    type="button"
+                    onClick={onMarkTaskCompleted}
+                    className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-violet-600 shadow-sm"
+                  >
+                    {t('chat.markAsCompleted')}
                   </button>
                 )}
               </div>
-            )}
-          </div>
-          <div className="mt-4 rounded-3xl bg-white/10 border border-white/10 p-4">
-            <p className="text-sm font-semibold">{taskTitle}</p>
-            {taskDescription && (
-              <p className="text-xs text-white/80 mt-1">{taskDescription}</p>
-            )}
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              {onTaskClick ? (
-                <button
-                  type="button"
-                  onClick={onTaskClick}
-                  className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-white/30 hover:bg-white/10 transition-colors cursor-pointer"
-                >
-                  {taskStatus === 'open' ? t('chat.openTask') : t('chat.completedTask')}
-                </button>
-              ) : (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border border-white/30">
-                  {taskStatus === 'open' ? t('chat.openTask') : t('chat.completedTask')}
-                </span>
-              )}
-              {taskStatus === 'open' && onMarkTaskCompleted && (
-                <button
-                  type="button"
-                  onClick={onMarkTaskCompleted}
-                  className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-violet-600 shadow-sm"
-                >
-                  {t('chat.markAsCompleted')}
-                </button>
-              )}
             </div>
           </div>
-        </div>
 
-        {/* Messages */}
-        <div
-          className="flex-1 overflow-y-auto px-5 py-6 space-y-4 ios-scroll"
-          style={{
-            paddingBottom: `calc(${inputBarHeightPx}px + ${keyboardOffsetPx}px + env(safe-area-inset-bottom) + 12px)`,
-          }}
-        >
+          {/* Messages */}
+          <div
+            className="flex-1 overflow-y-auto px-5 py-6 space-y-4 ios-scroll"
+            style={{
+              paddingBottom: `calc(${inputBarHeightPx}px + ${keyboardOffsetPx}px + env(safe-area-inset-bottom) + 12px)`,
+            }}
+          >
           {messages.map((message) => {
             const isCurrentUser = message.senderId === currentUserId;
             return (
@@ -564,20 +579,20 @@ export default function ChatInterface({
               </div>
             </div>
           ))}
-          <div ref={messagesEndRef} />
-        </div>
+            <div ref={messagesEndRef} />
+          </div>
 
-        {/* Message Input */}
-        <div
-          ref={inputBarRef}
-          className="px-4 pt-0 bg-transparent md:static md:p-5 safe-area-x"
-          style={{
-            paddingBottom: `calc(env(safe-area-inset-bottom) + 1.25rem)`,
-            transform: keyboardOffsetPx ? `translateY(-${keyboardOffsetPx}px)` : undefined,
-            transition: 'transform 120ms ease-out',
-            willChange: keyboardOffsetPx ? 'transform' : undefined,
-          }}
-        >
+          {/* Message Input */}
+          <div
+            ref={inputBarRef}
+            className="px-4 pt-0 bg-transparent md:static md:p-5 safe-area-x"
+            style={{
+              paddingBottom: `calc(env(safe-area-inset-bottom) + 1.25rem)`,
+              transform: keyboardOffsetPx ? `translateY(-${keyboardOffsetPx}px)` : undefined,
+              transition: 'transform 120ms ease-out',
+              willChange: keyboardOffsetPx ? 'transform' : undefined,
+            }}
+          >
           <form onSubmit={handleSubmit} className="mt-auto">
             <div className="flex items-center gap-3 rounded-full border border-white/15 bg-white/10 px-4 py-2 backdrop-blur-md w-full shadow-[0_10px_25px_rgba(15,23,42,0.2)]">
             <button
@@ -644,6 +659,7 @@ export default function ChatInterface({
             </button>
           </div>
           </form>
+          </div>
         </div>
       </div>
     </div>
