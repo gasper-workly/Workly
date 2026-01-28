@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Order } from '@/app/lib/orders';
 import { uploadImageAndGetPublicUrl } from '@/app/lib/uploads';
 import { useTranslation } from '@/app/hooks/useTranslation';
+import { Capacitor } from '@capacitor/core';
+import { isCapacitorNative } from '@/app/lib/supabase/capacitor-storage';
 import {
   CalendarIcon,
   MapPinIcon,
@@ -95,6 +97,7 @@ export default function ChatInterface({
   const [keyboardOffsetPx, setKeyboardOffsetPx] = useState(0);
   const inputBarRef = useRef<HTMLDivElement>(null);
   const [inputBarHeightPx, setInputBarHeightPx] = useState(0);
+  const [showSafeAreaFade, setShowSafeAreaFade] = useState(false);
 
   // Set body background to purple gradient so iOS safe areas match
   useEffect(() => {
@@ -106,6 +109,16 @@ export default function ChatInterface({
     return () => {
       body.style.background = prevBg;
     };
+  }, []);
+
+  // iOS native: the WebView safe areas can remain grey on some devices.
+  // Add a subtle fade at the top/bottom edge of the chat so the transition is less harsh.
+  useEffect(() => {
+    try {
+      setShowSafeAreaFade(isCapacitorNative() && Capacitor.getPlatform() === 'ios');
+    } catch {
+      setShowSafeAreaFade(false);
+    }
   }, []);
 
   // Prevent the page itself from scrolling while in chat (we only want the messages list to scroll).
@@ -292,7 +305,13 @@ export default function ChatInterface({
 
   return (
     <div className="w-full h-full">
-      <div className="w-full h-full rounded-none md:rounded-[32px] bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800 text-white flex flex-col overflow-hidden">
+      <div className="relative w-full h-full rounded-none md:rounded-[32px] bg-gradient-to-b from-violet-600 via-violet-700 to-indigo-800 text-white flex flex-col overflow-hidden">
+        {showSafeAreaFade && (
+          <>
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-4 bg-gradient-to-b from-gray-50 to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-4 bg-gradient-to-t from-gray-50 to-transparent" />
+          </>
+        )}
         {/* Header */}
         <div className="p-6 pb-4 border-b border-white/25">
           <div className="flex items-start gap-3">
