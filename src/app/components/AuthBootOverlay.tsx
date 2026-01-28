@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { isCapacitorNative } from '@/app/lib/supabase/capacitor-storage';
 import { createClient } from '@/app/lib/supabase/client';
 import { loadCachedProfile } from '@/app/lib/authProfileCache';
+import { Capacitor } from '@capacitor/core';
 
 function normalizeRole(role: unknown): 'client' | 'provider' | null {
   return role === 'client' || role === 'provider' ? role : null;
@@ -18,6 +19,7 @@ export default function AuthBootOverlay() {
   const [booting, setBooting] = useState(true);
   const [redirecting, setRedirecting] = useState(false);
   const [bootStartedAt] = useState(() => Date.now());
+  const [showSafeAreaFade, setShowSafeAreaFade] = useState(false);
 
   // Once we have navigated away from login/home, drop the overlay.
   useEffect(() => {
@@ -120,16 +122,40 @@ export default function AuthBootOverlay() {
     };
   }, [bootStartedAt, pathname, redirecting, router]);
 
+  // iOS native: safe areas can stay grey; blend them into the boot overlay.
+  useEffect(() => {
+    try {
+      setShowSafeAreaFade(isCapacitorNative() && Capacitor.getPlatform() === 'ios');
+    } catch {
+      setShowSafeAreaFade(false);
+    }
+  }, []);
+
   if (!booting) return null;
 
   // Full-screen overlay to avoid flashing the login form on cold start
   return (
-    <div className="fixed inset-0 z-[10001] flex flex-col items-center justify-center bg-violet-600">
-      {/* iOS notch / status-bar area background */}
-      <div
-        className="fixed top-0 left-0 right-0 bg-violet-600 pointer-events-none"
-        style={{ height: 'env(safe-area-inset-top)' }}
-      />
+    <div className="fixed inset-0 z-[10001] flex flex-col items-center justify-center bg-violet-600 overflow-hidden">
+      {showSafeAreaFade && (
+        <>
+          {/* "Big" fade: grey -> purple (top) */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0"
+            style={{
+              height: 'calc(env(safe-area-inset-top) + 72px)',
+              background: 'linear-gradient(to bottom, rgba(249, 250, 251, 1), rgba(124, 58, 237, 0))',
+            }}
+          />
+          {/* "Big" fade: grey -> purple (bottom) */}
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0"
+            style={{
+              height: 'calc(env(safe-area-inset-bottom) + 72px)',
+              background: 'linear-gradient(to top, rgba(249, 250, 251, 1), rgba(124, 58, 237, 0))',
+            }}
+          />
+        </>
+      )}
       <img src="/workly-logo.png" alt="Workly" className="h-28 w-auto drop-shadow" />
       <div className="mt-5 h-6 w-6 animate-spin rounded-full border-2 border-white/40 border-t-white" />
     </div>
