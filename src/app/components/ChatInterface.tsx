@@ -101,7 +101,8 @@ export default function ChatInterface({
   const safeAreaBlendColor = 'rgba(249, 250, 251, 1)'; // gray-50 (matches globals.css --background)
   // Fade sizing: "in-between" the tiny fade and the large fade (per UX feedback).
   const topFadeExtraPx = 44;
-  const bottomFadeExtraPx = Math.round(inputBarHeightPx * 0.55) + 6;
+  // Bottom: revert to the original "small" fade.
+  const bottomFadeExtraPx = 16;
 
   // Set body background to purple gradient so iOS safe areas match
   useEffect(() => {
