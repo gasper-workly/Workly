@@ -99,6 +99,9 @@ export default function ChatInterface({
   const [inputBarHeightPx, setInputBarHeightPx] = useState(0);
   const [showSafeAreaFade, setShowSafeAreaFade] = useState(false);
   const safeAreaBlendColor = 'rgba(249, 250, 251, 1)'; // gray-50 (matches globals.css --background)
+  // Fade sizing: "in-between" the tiny fade and the large fade (per UX feedback).
+  const topFadeExtraPx = 44;
+  const bottomFadeExtraPx = Math.round(inputBarHeightPx * 0.55) + 6;
 
   // Set body background to purple gradient so iOS safe areas match
   useEffect(() => {
@@ -313,14 +316,14 @@ export default function ChatInterface({
             <div
               className="pointer-events-none absolute inset-x-0 top-0 z-0"
               style={{
-                height: 'calc(env(safe-area-inset-top) + 72px)',
+                height: `calc(env(safe-area-inset-top) + ${topFadeExtraPx}px)`,
                 background: `linear-gradient(to bottom, ${safeAreaBlendColor}, rgba(249, 250, 251, 0))`,
               }}
             />
             <div
               className="pointer-events-none absolute inset-x-0 bottom-0 z-0"
               style={{
-                height: `calc(env(safe-area-inset-bottom) + ${inputBarHeightPx}px + 12px)`,
+                height: `calc(env(safe-area-inset-bottom) + ${bottomFadeExtraPx}px)`,
                 background: `linear-gradient(to top, ${safeAreaBlendColor}, rgba(249, 250, 251, 0))`,
               }}
             />
