@@ -58,7 +58,6 @@ captures/
 #*.keystore
 
 # Workly: never commit signing keys/certs
-keystore/
 *.jks
 *.keystore
 

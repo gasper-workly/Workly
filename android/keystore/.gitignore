@@ -1,0 +1,8 @@
+*.jks
+*.keystore
+*.pem
+*.cer
+*.der
+*.p12
+*.pfx
+*.properties
