@@ -19,7 +19,6 @@ export default function AuthBootOverlay() {
   const [booting, setBooting] = useState(true);
   const [redirecting, setRedirecting] = useState(false);
   const [bootStartedAt] = useState(() => Date.now());
-  const [showSafeAreaFade, setShowSafeAreaFade] = useState(false);
 
   // Once we have navigated away from login/home, drop the overlay.
   useEffect(() => {
@@ -125,9 +124,10 @@ export default function AuthBootOverlay() {
   // iOS native: safe areas can stay grey; blend them into the boot overlay.
   useEffect(() => {
     try {
-      setShowSafeAreaFade(isCapacitorNative() && Capacitor.getPlatform() === 'ios');
+      // Kept for potential future styling; currently unused.
+      void (isCapacitorNative() && Capacitor.getPlatform() === 'ios');
     } catch {
-      setShowSafeAreaFade(false);
+      // ignore
     }
   }, []);
 
@@ -135,29 +135,11 @@ export default function AuthBootOverlay() {
 
   // Full-screen overlay to avoid flashing the login form on cold start
   return (
-    <div className="fixed inset-0 z-[10001] flex flex-col items-center justify-center bg-violet-600 overflow-hidden">
-      {showSafeAreaFade && (
-        <>
-          {/* "Big" fade: grey -> purple (top) */}
-          <div
-            className="pointer-events-none absolute inset-x-0 top-0"
-            style={{
-              height: 'calc(env(safe-area-inset-top) + 72px)',
-              background: 'linear-gradient(to bottom, rgba(249, 250, 251, 1), rgba(124, 58, 237, 0))',
-            }}
-          />
-          {/* "Big" fade: grey -> purple (bottom) */}
-          <div
-            className="pointer-events-none absolute inset-x-0 bottom-0"
-            style={{
-              height: 'calc(env(safe-area-inset-bottom) + 72px)',
-              background: 'linear-gradient(to top, rgba(249, 250, 251, 1), rgba(124, 58, 237, 0))',
-            }}
-          />
-        </>
-      )}
-      <img src="/workly-logo.png" alt="Workly" className="h-28 w-auto drop-shadow" />
-      <div className="mt-5 h-6 w-6 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+    <div className="fixed inset-0 z-[10001] flex flex-col items-center justify-center bg-gray-50 overflow-hidden">
+      <div className="text-violet-600 font-extrabold tracking-[0.28em] text-3xl select-none">
+        WORKLY
+      </div>
+      <div className="mt-5 h-6 w-6 animate-spin rounded-full border-2 border-violet-600/25 border-t-violet-600" />
     </div>
   );
 }
