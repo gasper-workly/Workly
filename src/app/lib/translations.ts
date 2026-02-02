@@ -272,6 +272,7 @@ export type TranslationKey =
   | 'form.request.photosLabel'
   | 'form.request.photosAdd'
   | 'form.request.photosRemove'
+  | 'form.request.photosLimitOne'
   | 'form.request.submitCreate'
   | 'task.viewDescription'
   | 'task.hideDescription'
@@ -598,9 +599,10 @@ export const translations: Record<LanguageCode, Record<TranslationKey, string>> 
     'form.request.locationError': 'Please select a location on the map',
     'form.request.priceLabel': 'Price',
     'form.request.negotiableLabel': 'Negotiable',
-    'form.request.photosLabel': 'Photos',
-    'form.request.photosAdd': 'Add photos',
+    'form.request.photosLabel': 'Photo',
+    'form.request.photosAdd': 'Add photo',
     'form.request.photosRemove': 'Remove image',
+    'form.request.photosLimitOne': 'one only',
     'form.request.submitCreate': 'Create Request',
 
     'task.viewDescription': 'View description',
@@ -925,7 +927,7 @@ export const translations: Record<LanguageCode, Record<TranslationKey, string>> 
     'newRequest.error.loginRequired': 'Za ustvarjanje naročila morate biti prijavljeni',
     'newRequest.error.submitFailed': 'Naročila ni bilo mogoče ustvariti. Poskusite znova.',
 
-    'form.request.titleLabel': 'Naslov',
+    'form.request.titleLabel': 'Naziv opravila',
     'form.request.titlePlaceholder': 'npr. Potrebujem pomoč pri selitvi pohištva',
     'form.request.categoryLabel': 'Kategorija',
     'form.request.descriptionLabel': 'Opis',
@@ -933,9 +935,10 @@ export const translations: Record<LanguageCode, Record<TranslationKey, string>> 
     'form.request.locationError': 'Prosimo izberite lokacijo na zemljevidu',
     'form.request.priceLabel': 'Cena',
     'form.request.negotiableLabel': 'Po dogovoru',
-    'form.request.photosLabel': 'Fotografije',
-    'form.request.photosAdd': 'Dodaj fotografije',
+    'form.request.photosLabel': 'Fotografija',
+    'form.request.photosAdd': 'Dodaj fotografijo',
     'form.request.photosRemove': 'Odstrani sliko',
+    'form.request.photosLimitOne': 'samo 1',
     'form.request.submitCreate': 'Ustvari naročilo',
 
     'task.viewDescription': 'Poglej opis',

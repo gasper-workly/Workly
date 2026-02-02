@@ -114,19 +114,18 @@ export default function ServiceRequestForm({
   }, [imagePreviews]);
 
   const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
+    const file = e.target.files?.[0] || null;
+    if (!file) return;
 
-    // Allow multiple picks; cap at 5 images total to keep it lightweight
-    setFormData((prev) => {
-      const existing = prev.images || [];
-      const combined = [...existing, ...files].slice(0, 5);
-      return { ...prev, images: combined };
-    });
+    // Limit to 1 image (some devices struggle with multi-pick uploads).
+    setFormData((prev) => ({ ...prev, images: [file] }));
 
     setImagePreviews((prev) => {
-      const newPreviews = files.map((f) => URL.createObjectURL(f));
-      return [...prev, ...newPreviews].slice(0, 5);
+      // Revoke previous preview URLs to avoid leaks
+      for (const url of prev) {
+        if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+      }
+      return [URL.createObjectURL(file)];
     });
 
     // Allow re-selecting the same file
@@ -320,7 +319,10 @@ export default function ServiceRequestForm({
       {/* Image Upload */}
       <div>
         <label className="block text-sm font-medium text-black">
-          {t('form.request.photosLabel')} (optional)
+          {t('form.request.photosLabel')}{' '}
+          <span className="text-xs font-normal text-gray-600">
+            (optional • {t('form.request.photosLimitOne')})
+          </span>
         </label>
         <div className="mt-1 flex items-center space-x-4">
           <button
@@ -335,7 +337,6 @@ export default function ServiceRequestForm({
             ref={fileInputRef}
             onChange={handleImagesChange}
             accept="image/*"
-            multiple
             className="hidden"
           />
         </div>

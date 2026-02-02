@@ -36,6 +36,35 @@ export default function SignupForm({ defaultRole, onSubmit }: SignupFormProps) {
   const [ageError, setAgeError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
+  const formatDobDdMmYyyy = (raw: string): string => {
+    const digits = raw.replace(/\D/g, '').slice(0, 8); // DDMMYYYY
+    const dd = digits.slice(0, 2);
+    const mm = digits.slice(2, 4);
+    const yyyy = digits.slice(4, 8);
+    if (digits.length <= 2) return dd;
+    if (digits.length <= 4) return `${dd}/${mm}`;
+    return `${dd}/${mm}/${yyyy}`;
+  };
+
+  const parseDobDdMmYyyyToIso = (dob: string): string | null => {
+    const m = dob.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!m) return null;
+    const dd = Number(m[1]);
+    const mm = Number(m[2]);
+    const yyyy = Number(m[3]);
+
+    if (yyyy < 1900 || yyyy > 2100) return null;
+    if (mm < 1 || mm > 12) return null;
+    if (dd < 1 || dd > 31) return null;
+
+    // Validate actual calendar date
+    const d = new Date(yyyy, mm - 1, dd);
+    if (d.getFullYear() !== yyyy || d.getMonth() !== mm - 1 || d.getDate() !== dd) return null;
+
+    const iso = `${String(yyyy).padStart(4, '0')}-${String(mm).padStart(2, '0')}-${String(dd).padStart(2, '0')}`;
+    return iso;
+  };
+
   const setPasswordAndMaybeClearError = (nextPassword: string) => {
     setFormData((prev) => {
       const next = { ...prev, password: nextPassword };
@@ -103,7 +132,9 @@ export default function SignupForm({ defaultRole, onSubmit }: SignupFormProps) {
 
   const calculateAge = (dateOfBirth: string): number => {
     const today = new Date();
-    const birthDate = new Date(dateOfBirth);
+    const iso = parseDobDdMmYyyyToIso(dateOfBirth);
+    const birthDate = iso ? new Date(iso) : new Date('invalid');
+    if (Number.isNaN(birthDate.getTime())) return 0;
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
     
@@ -115,12 +146,24 @@ export default function SignupForm({ defaultRole, onSubmit }: SignupFormProps) {
   };
 
   const handleDateOfBirthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const dateValue = e.target.value;
-    setFormData({ ...formData, dateOfBirth: dateValue });
+    const formatted = formatDobDdMmYyyy(e.target.value);
+    setFormData({ ...formData, dateOfBirth: formatted });
     setAgeError('');
     
-    if (dateValue) {
-      const age = calculateAge(dateValue);
+    if (formatted.length === 10) {
+      const iso = parseDobDdMmYyyyToIso(formatted);
+      if (!iso) {
+        setAgeError(t('auth.form.dateOfBirthRequired'));
+        return;
+      }
+
+      const maxIso = getMaxDate();
+      if (iso > maxIso) {
+        setAgeError(t('auth.signup.ageTooYoung'));
+        return;
+      }
+
+      const age = calculateAge(formatted);
       if (age < 18) {
         setAgeError(t('auth.signup.ageTooYoung'));
       }
@@ -132,6 +175,12 @@ export default function SignupForm({ defaultRole, onSubmit }: SignupFormProps) {
     setPasswordError('');
     
     if (!formData.dateOfBirth) {
+      setAgeError(t('auth.form.dateOfBirthRequired'));
+      return;
+    }
+
+    const isoDob = parseDobDdMmYyyyToIso(formData.dateOfBirth);
+    if (!isoDob) {
       setAgeError(t('auth.form.dateOfBirthRequired'));
       return;
     }
@@ -152,7 +201,8 @@ export default function SignupForm({ defaultRole, onSubmit }: SignupFormProps) {
       fullName: formData.fullName,
       email: formData.email,
       password: formData.password,
-      dateOfBirth: formData.dateOfBirth,
+      // Submit in ISO format to keep server/storage consistent.
+      dateOfBirth: isoDob,
       phone: formData.phone,
       role: formData.role,
       specialties: formData.specialties,
@@ -194,10 +244,11 @@ export default function SignupForm({ defaultRole, onSubmit }: SignupFormProps) {
           {t('auth.form.dateOfBirth')}
         </label>
         <input
-          type="date"
+          type="text"
           id="dateOfBirth"
           required
-          max={getMaxDate()}
+          inputMode="numeric"
+          autoComplete="bday"
           className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none focus:ring-1 text-black ${
             ageError 
               ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
@@ -205,6 +256,7 @@ export default function SignupForm({ defaultRole, onSubmit }: SignupFormProps) {
           }`}
           value={formData.dateOfBirth}
           onChange={handleDateOfBirthChange}
+          placeholder="DD/MM/YYYY"
         />
         {ageError && (
           <p className="mt-1 text-sm text-red-600">{ageError}</p>
