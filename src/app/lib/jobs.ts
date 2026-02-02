@@ -114,6 +114,24 @@ export async function getProviderCompletedJobCategoryCounts(providerId: string):
 > {
   const supabase = createClient();
 
+  // Prefer an RPC (if present) so this can work even when `jobs` isn't publicly readable via RLS.
+  // Safe fallback: if RPC doesn't exist, we do the normal SELECT below.
+  try {
+    const { data: rpcData, error: rpcError } = await supabase.rpc(
+      'get_provider_completed_job_category_counts',
+      { provider_id: providerId }
+    );
+    if (!rpcError && Array.isArray(rpcData)) {
+      type RpcRow = { name: string; count: number };
+      const rows = rpcData as RpcRow[];
+      return rows
+        .filter((r) => typeof r?.name === 'string' && typeof r?.count === 'number')
+        .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+    }
+  } catch {
+    // ignore, fall back to SELECT
+  }
+
   const { data, error } = await supabase
     .from('jobs')
     .select('category')

@@ -78,4 +78,24 @@ CREATE POLICY "Job owners can update their jobs" ON public.jobs
     (SELECT auth.uid()) = client_id OR (SELECT auth.uid()) = provider_id
   );
 
+-- 4) PUBLIC: completed job category counts (safe aggregate for public provider profiles)
+CREATE OR REPLACE FUNCTION public.get_provider_completed_job_category_counts(provider_id uuid)
+RETURNS TABLE(name text, count integer)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT
+    COALESCE(j.category, 'Other')::text AS name,
+    COUNT(*)::int AS count
+  FROM public.jobs j
+  WHERE j.provider_id = $1
+    AND j.status = 'completed'
+  GROUP BY COALESCE(j.category, 'Other')
+  ORDER BY COUNT(*) DESC, COALESCE(j.category, 'Other') ASC;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_provider_completed_job_category_counts(uuid) TO anon, authenticated;
+
 

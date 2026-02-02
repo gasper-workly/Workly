@@ -158,6 +158,31 @@ CREATE INDEX IF NOT EXISTS idx_chat_threads_provider_id ON public.chat_threads(p
 CREATE INDEX IF NOT EXISTS idx_reports_status ON public.reports(status);
 
 -- ============================================
+-- PUBLIC RPC HELPERS (safe aggregates)
+-- ============================================
+
+-- Public: completed job category counts for a provider.
+-- Useful for showing "top categories" on public provider profiles even if direct jobs reads are restricted.
+CREATE OR REPLACE FUNCTION public.get_provider_completed_job_category_counts(provider_id uuid)
+RETURNS TABLE(name text, count integer)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT
+    COALESCE(j.category, 'Other')::text AS name,
+    COUNT(*)::int AS count
+  FROM public.jobs j
+  WHERE j.provider_id = $1
+    AND j.status = 'completed'
+  GROUP BY COALESCE(j.category, 'Other')
+  ORDER BY COUNT(*) DESC, COALESCE(j.category, 'Other') ASC;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_provider_completed_job_category_counts(uuid) TO anon, authenticated;
+
+-- ============================================
 -- CASH EARNINGS TABLE (manual earnings for providers)
 -- ============================================
 CREATE TABLE IF NOT EXISTS public.cash_earnings (
