@@ -33,7 +33,10 @@ export default function ProviderOnboardingStep1() {
         <p className="mt-6 text-black">{t('onboarding.welcome.footer')}</p>
       </div>
 
-      <div className="w-full max-w-md mx-auto px-6 pb-8">
+      <div
+        className="w-full max-w-md mx-auto px-6"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 3rem)' }}
+      >
         <div className="flex items-center justify-between">
           <button
             onClick={handleSkip}
