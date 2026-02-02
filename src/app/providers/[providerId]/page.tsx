@@ -6,11 +6,38 @@ import DashboardLayout from '@/app/components/DashboardLayout';
 import UserAvatar from '@/app/components/UserAvatar';
 import { useAuth } from '@/app/hooks/useAuth';
 import { getProviderReviews, getProviderStats, ReviewWithDetails } from '@/app/lib/reviews';
+import { getProviderCompletedJobCategoryCounts } from '@/app/lib/jobs';
 import { createClient } from '@/app/lib/supabase/client';
 import { createReport } from '@/app/lib/reports';
 import { StarIcon as StarIconSolid, ArrowLeftIcon, MapPinIcon, ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import type { Profile } from '@/types/database';
 import { useTranslation } from '@/app/hooks/useTranslation';
+import type { TranslationKey } from '@/app/lib/translations';
+
+const CATEGORY_COLORS = [
+  'bg-blue-500',
+  'bg-green-500',
+  'bg-yellow-500',
+  'bg-gray-500',
+  'bg-pink-500',
+  'bg-indigo-500',
+  'bg-teal-500',
+  'bg-orange-500',
+  'bg-purple-500',
+];
+
+const CATEGORY_LABEL_TO_KEY: Partial<Record<string, TranslationKey>> = {
+  'Home Maintenance & Repair': 'category.homeMaintenance',
+  'Outdoor & Garden Work': 'category.outdoorGarden',
+  'Moving & Transport': 'category.movingTransport',
+  'Cleaning & Maintenance': 'category.cleaningMaintenance',
+  'Construction & Renovation': 'category.constructionRenovation',
+  'Technical & Installation': 'category.technicalInstallation',
+  'Vehicle Services': 'category.vehicleServices',
+  'Personal Assistance': 'category.personalAssistance',
+  'Seasonal & Miscellaneous': 'category.seasonalMisc',
+  Other: 'common.other',
+};
 
 export default function PublicProviderProfilePage() {
   const params = useParams<{ providerId: string }>();
@@ -26,6 +53,14 @@ export default function PublicProviderProfilePage() {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+  const [categoryCounts, setCategoryCounts] = useState<{ name: string; count: number }[]>([]);
+  const tVars = (key: TranslationKey, vars: Record<string, string | number>) => {
+    let s = t(key);
+    for (const [k, v] of Object.entries(vars)) {
+      s = s.replaceAll(`{${k}}`, String(v));
+    }
+    return s;
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -57,6 +92,10 @@ export default function PublicProviderProfilePage() {
         // Fetch stats for average rating
         const stats = await getProviderStats(providerId);
         setAvgRating(stats.averageRating);
+
+        // Fetch completed job category counts (same data used in provider analytics)
+        const counts = await getProviderCompletedJobCategoryCounts(providerId);
+        setCategoryCounts(counts);
       } catch (error) {
         console.error('Error loading provider data:', error);
       } finally {
@@ -150,19 +189,41 @@ export default function PublicProviderProfilePage() {
           {provider?.bio && (
             <p className="mt-2 text-sm text-black text-center">{provider.bio}</p>
           )}
-          <button
-            onClick={() => {
-              if (!user) {
-                router.push('/login');
-                return;
-              }
-              setShowReportModal(true);
-            }}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
-          >
-            <ExclamationTriangleIcon className="h-4 w-4" />
-            {t('providerProfile.reportButton')}
-          </button>
+        </div>
+
+        {/* Task categories (from completed jobs, like provider analytics) */}
+        <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] p-5">
+          <h2 className="text-base font-semibold text-black">{t('analytics.categories.title')}</h2>
+          <div className="mt-3 space-y-3">
+            {categoryCounts.length === 0 ? (
+              <div className="text-sm text-gray-500">{t('analytics.categories.empty')}</div>
+            ) : (
+              (() => {
+                const total = categoryCounts.reduce((a, c) => a + (c.count || 0), 0);
+                return categoryCounts.map((c, idx) => {
+                  const key = CATEGORY_LABEL_TO_KEY[c.name];
+                  const label = key ? t(key) : c.name;
+                  const color = CATEGORY_COLORS[idx % CATEGORY_COLORS.length];
+                  const pct = total > 0 ? Math.min(100, (c.count / total) * 100) : 0;
+                  return (
+                    <div key={c.name} className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-medium text-black">{label}</span>
+                          <span className="text-xs text-gray-500">
+                            {tVars('analytics.categories.taskCount', { count: c.count })}
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                          <div className={`${color} rounded-full h-2`} style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                });
+              })()
+            )}
+          </div>
         </div>
 
         {/* Reviews */}
@@ -212,6 +273,23 @@ export default function PublicProviderProfilePage() {
               ))
             )}
           </div>
+        </div>
+
+        {/* Report button (bottom) */}
+        <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] p-5">
+          <button
+            onClick={() => {
+              if (!user) {
+                router.push('/login');
+                return;
+              }
+              setShowReportModal(true);
+            }}
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-red-600 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 transition-colors"
+          >
+            <ExclamationTriangleIcon className="h-4 w-4" />
+            {t('providerProfile.reportButton')}
+          </button>
         </div>
 
         {/* Report Modal */}
